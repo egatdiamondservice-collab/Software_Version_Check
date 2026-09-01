@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body;
+    background-image: radial-gradient(#e5e0d8 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-head font-normal;
+    text-wrap: balance;
+  }
+
+  /* โฟกัสต้องเห็นชัดเพราะหน้าติ๊กใช้คีย์บอร์ดได้ด้วย */
+  :focus-visible {
+    outline: 3px solid #2d5da1;
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply font-body;
+  }
+}
+
+@layer components {
+  .wob {
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+  .wob-md {
+    border-radius: 35px 6px 30px 6px / 6px 30px 6px 35px;
+  }
+  .wob-sm {
+    border-radius: 14px 4px 12px 4px / 4px 12px 4px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

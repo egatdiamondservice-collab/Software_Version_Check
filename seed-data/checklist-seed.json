@@ -1,0 +1,343 @@
+[
+  {
+    "model": {
+      "code": "VECTOR",
+      "name": "Vector"
+    },
+    "sections": [
+      {
+        "name": "ทดสอบทั่วไป (2 หัวชาร์จ)",
+        "items": [
+          {
+            "testCase": "ชาร์จหัว 1 เดี่ยว 5 นาที แล้วหยุด",
+            "expected": "ชาร์จและหยุดได้ปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จหัว 2 เดี่ยว 5 นาที แล้วหยุด",
+            "expected": "ชาร์จและหยุดได้ปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 1 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "ชาร์จและหยุดได้ปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 2 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "ชาร์จและหยุดได้ปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 1 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          },
+          {
+            "testCase": "หัว 2 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          },
+          {
+            "testCase": "เริ่มหัว 1 และหัว 2 พร้อมกัน ชาร์จ 5 นาที",
+            "expected": "ชาร์จและหยุดได้ปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 1 ชาร์จอยู่ 2 นาที → เริ่มหัว 2 แทรก, อีก 2 นาที",
+            "expected": "หัว 1 ไม่หลุด และหัว 2 เริ่มชาร์จได้",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 2 ชาร์จอยู่ 2 นาที → เริ่มหัว 1 แทรก, อีก 2 นาที",
+            "expected": "หัว 2 ไม่หลุด และหัว 1 เริ่มชาร์จได้",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 2 หัว 2 นาที → หยุดหัว 1 → ดูหัว 2 ต่ออีก 2 นาที",
+            "expected": "หัว 2 ต้องชาร์จต่อได้",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 2 หัว 2 นาที → หยุดหัว 2 → ดูหัว 1 ต่ออีก 2 นาที",
+            "expected": "หัว 1 ต้องชาร์จต่อได้",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 2 หัว 2 นาที → หยุดพร้อมกันทั้งคู่",
+            "expected": "ทั้งสองหัวหยุดปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "รถ 2 คันคนละรุ่น/คนละกำลังไฟ ชาร์จพร้อมกัน 5 นาที",
+            "expected": "แต่ละหัวควบคุมการชาร์จได้ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Start หัว 1 → ระหว่างนั้นเสียบหัว 2 แต่ไม่ Start",
+            "expected": "หัว 1 ต้องชาร์จต่อเนื่องปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Start หัว 2 → ระหว่างนั้นเสียบหัว 1 แต่ไม่ Start",
+            "expected": "หัว 2 ต้องชาร์จต่อเนื่องปกติ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 1 start→stop 5 รอบ (รอบละ ~20 วินาที)",
+            "expected": "ชาร์จและหยุดได้ปกติทุกรอบ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "หัว 2 start→stop 5 รอบ (รอบละ ~20 วินาที)",
+            "expected": "ชาร์จและหยุดได้ปกติทุกรอบ",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "สลับ: start หัว1 → start หัว2 → stop หัว1 → start หัว1 → stop หัว2 → start หัว2 (รอบละ ~30 วินาที)",
+            "expected": "ชาร์จและหยุดได้ปกติโดยที่อีกหัวไม่สะดุด",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "กด Emergency Stop ขณะชาร์จ 2 หัว",
+            "expected": "ทั้ง 2 หัวหยุดชาร์จ และ หน้าจอขึ้น Emergency",
+            "verify": "หน้าจอต้องแสดงสถานะ Emergency Stop"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "model": {
+      "code": "VECTOR_DCL",
+      "name": "Vector DC Link"
+    },
+    "sections": [
+      {
+        "name": "Single Connector",
+        "items": [
+          {
+            "testCase": "ชาร์จ Master1 เดี่ยว 5 นาที โดยให้ Follower Share Power",
+            "expected": "Master1 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Follower ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master2 เดี่ยว 5 นาที โดยให้ Follower Share Power",
+            "expected": "Master2 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Follower ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Follower1 เดี่ยว 5 นาที โดยให้ Master Share Power",
+            "expected": "Follower1 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Master ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Follower2 เดี่ยว 5 นาที โดยให้ Master Share Power",
+            "expected": "Follower2 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Master ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master1 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "Master1 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Follower ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master2 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "Master2 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Follower ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower1 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "Follower1 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Master ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower2 เสียบสายทิ้งไว้ 1 นาทีไม่เริ่มชาร์จ",
+            "expected": "Follower2 ชาร์จได้ปกติ และสามารถใช้ Power Module จาก Master ได้ตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master1 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          },
+          {
+            "testCase": "Master2 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          },
+          {
+            "testCase": "Follower1 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          },
+          {
+            "testCase": "Follower2 เสียบสายทิ้งไว้ 2 นาทีไม่เริ่มชาร์จ",
+            "expected": "ต้อง timeout และขึ้น unplug",
+            "verify": "ตอน Time out หน้าจอต้องแสดง Unplug"
+          }
+        ]
+      },
+      {
+        "name": "2 Connectors – ตู้เดียวกัน",
+        "items": [
+          {
+            "testCase": "Master1 ชาร์จอยู่ 2 นาที → Start Master2 → ชาร์จต่ออีก 2 นาที",
+            "expected": "Master1 ไม่หลุด, Master2 เริ่มชาร์จได้ และมีการจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master2 ชาร์จอยู่ 2 นาที → Start Master1 → ชาร์จต่ออีก 2 นาที",
+            "expected": "Master2 ไม่หลุด, Master1 เริ่มชาร์จได้ และมีการจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master1 + Master2 ชาร์จ → Stop Master1 → ดู Master2 ต่ออีก 2 นาที",
+            "expected": "Master2 ต้องชาร์จต่อ และ Power ต้องปรับกลับตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Master1 + Master2 ชาร์จ → Stop Master2 → ดู Master1 ต่ออีก 2 นาที",
+            "expected": "Master1 ต้องชาร์จต่อ และ Power ต้องปรับกลับตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower1 ชาร์จอยู่ 2 นาที → Start Follower2 → ชาร์จต่ออีก 2 นาที",
+            "expected": "Follower1 ไม่หลุด, Follower2 เริ่มชาร์จได้ และมีการจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower2 ชาร์จอยู่ 2 นาที → Start Follower1 → ชาร์จต่ออีก 2 นาที",
+            "expected": "Follower2 ไม่หลุด, Follower1 เริ่มชาร์จได้ และมีการจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower1 + Follower2 ชาร์จ → Stop Follower1 → ดู Follower2 ต่ออีก 2 นาที",
+            "expected": "Follower2 ต้องชาร์จต่อ และ Power ต้องปรับกลับตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "Follower1 + Follower2 ชาร์จ → Stop Follower2 → ดู Follower1 ต่ออีก 2 นาที",
+            "expected": "Follower1 ต้องชาร์จต่อ และ Power ต้องปรับกลับตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          }
+        ]
+      },
+      {
+        "name": "2 Connectors – คนละตู้",
+        "items": [
+          {
+            "testCase": "ชาร์จ Master1 + Follower1 โดยทดสอบ Start ทั้ง 2 ลำดับ",
+            "expected": "หัวที่ชาร์จอยู่ก่อนต้องไม่หลุด และหัวที่ Start ตามต้องเริ่มชาร์จได้",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master1 + Follower2 โดยทดสอบ Start ทั้ง 2 ลำดับ",
+            "expected": "ทั้ง 2 หัวต้องชาร์จพร้อมกันได้ และ Share Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master2 + Follower1 โดยทดสอบ Start ทั้ง 2 ลำดับ",
+            "expected": "ทั้ง 2 หัวต้องชาร์จพร้อมกันได้ และ Share Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master2 + Follower2 โดยทดสอบ Start ทั้ง 2 ลำดับ",
+            "expected": "ทั้ง 2 หัวต้องชาร์จพร้อมกันได้ และ Share Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ขณะชาร์จ 2 หัวคนละตู้ → Stop 1 หัว → ดูอีกหัวต่ออีก 2 นาที",
+            "expected": "หัวที่เหลือต้องไม่หลุด และได้รับ Power เพิ่ม/ปรับกลับตาม Logic",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          }
+        ]
+      },
+      {
+        "name": "3 Connectors",
+        "items": [
+          {
+            "testCase": "ชาร์จ Master1 + Master2 + Follower1 พร้อมกัน",
+            "expected": "ทั้ง 3 หัวชาร์จได้ ไม่มีหัวใดหลุด และจัดสรร Power ถูกต้อง",
+            "verify": ""
+          },
+          {
+            "testCase": "ชาร์จ Master1 + Master2 + Follower2 พร้อมกัน",
+            "expected": "ทั้ง 3 หัวชาร์จได้ ไม่มีหัวใดหลุด และจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master1 + Follower1 + Follower2 พร้อมกัน",
+            "expected": "ทั้ง 3 หัวชาร์จได้ ไม่มีหัวใดหลุด และจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ Master2 + Follower1 + Follower2 พร้อมกัน",
+            "expected": "ทั้ง 3 หัวชาร์จได้ ไม่มีหัวใดหลุด และจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 3 หัว → Stop 1 หัว → ดูอีก 2 หัวต่ออีก 2 นาที",
+            "expected": "2 หัวที่เหลือต้องไม่หลุด และมีการจัดสรร Power ใหม่ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          }
+        ]
+      },
+      {
+        "name": "4 Connectors",
+        "items": [
+          {
+            "testCase": "Start Master1 + Master2 + Follower1 + Follower2 ให้ชาร์จพร้อมกัน 5 นาที",
+            "expected": "ทั้ง 4 หัวชาร์จได้พร้อมกัน ไม่มีหัวใดหลุด และจัดสรร Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 4 หัว → Stop Master1 → ดูอีก 3 หัวต่อ อีก 2 นาที",
+            "expected": "3 หัวที่เหลือต้องชาร์จต่อ และ Reallocate Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 4 หัว → Stop Master2 → ดูอีก 3 หัวต่อ อีก 2 นาที",
+            "expected": "3 หัวที่เหลือต้องชาร์จต่อ และ Reallocate Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 4 หัว → Stop Follower1 → ดูอีก 3 หัวต่อ อีก 2 นาที",
+            "expected": "3 หัวที่เหลือต้องชาร์จต่อ และ Reallocate Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 4 หัว → Stop Follower2 → ดูอีก 3 หัวต่อ อีก 2 นาที",
+            "expected": "3 หัวที่เหลือต้องชาร์จต่อ และ Reallocate Power ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          },
+          {
+            "testCase": "ชาร์จ 4 หัว → Stop พร้อมกันทั้งหมด",
+            "expected": "ทั้ง 4 หัวต้องหยุดได้ปกติ และ Power Module ต้องถูก Release ถูกต้อง",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          }
+        ]
+      },
+      {
+        "name": "Sequence / Repeat Test",
+        "items": [
+          {
+            "testCase": "สลับ Start/Stop Master1 → Follower1 → Master2 → Follower2 ต่อเนื่อง รอบละประมาณ 20–30 วินาที",
+            "expected": "ทุกหัว Start/Stop ได้ปกติ ไม่มี State ค้าง และไม่กระทบหัวอื่น",
+            "verify": "ตัวเลขหน้าตู้กับ Meter ต้องตรงกัน"
+          }
+        ]
+      },
+      {
+        "name": "Emergency Stop",
+        "items": [
+          {
+            "testCase": "กด Emergency Stop ขณะ Master1 + Master2 + Follower1 + Follower2 ชาร์จพร้อมกัน",
+            "expected": "ระบบต้องหยุดการจ่าย Power ตาม Safety Logic ของ DC Link และไม่มีหัวใดค้างในสถานะ Charging",
+            "verify": "หน้าจอต้องแสดงสถานะ Emergency Stop"
+          }
+        ]
+      }
+    ]
+  }
+]
