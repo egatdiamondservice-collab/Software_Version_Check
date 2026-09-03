@@ -22,7 +22,14 @@ export default async function Dashboard({
         title="รุ่นตู้ทั้งหมด"
         sub="แต่ละรุ่นใช้ Flow เวอร์ชันอะไร และผ่านการทดสอบหรือยัง"
         actions={
-          user.role !== 'VIEWER' ? <BtnLink href="/releases/new">อัปโหลดเวอร์ชันใหม่</BtnLink> : undefined
+          user.role !== 'VIEWER' ? (
+            <>
+              <BtnLink href="/models/new" variant="secondary">
+                + เพิ่มรุ่นตู้ใหม่
+              </BtnLink>
+              <BtnLink href="/releases/new">อัปโหลดเวอร์ชันใหม่</BtnLink>
+            </>
+          ) : undefined
         }
       />
 
@@ -34,7 +41,12 @@ export default async function Dashboard({
 
       {models.length === 0 ? (
         <Empty>
-          ยังไม่มีรุ่นตู้ในระบบ — ผู้ดูแลระบบเพิ่มรุ่นได้ที่หน้า Checklist
+          ยังไม่มีรุ่นตู้ในระบบ
+          {user.role !== 'VIEWER' && (
+            <div className="mt-4">
+              <BtnLink href="/models/new">+ เพิ่มรุ่นตู้ใหม่</BtnLink>
+            </div>
+          )}
         </Empty>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -90,7 +102,7 @@ export default async function Dashboard({
                     ประวัติเวอร์ชัน ({releases.length})
                   </Link>
                   <Link href={`/coverage/${m.code}`} className="underline decoration-wavy hover:text-accent">
-                    ตารางความครอบคลุม
+                    สรุปการทดสอบ
                   </Link>
                 </div>
               </Card>

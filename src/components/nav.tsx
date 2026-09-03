@@ -25,6 +25,9 @@ export function Nav({ user }: { user: UserRow }) {
           <Link href="/" className={LINK}>
             หน้าแรก
           </Link>
+          <Link href="/models" className={LINK}>
+            รุ่นตู้
+          </Link>
           {user.role !== 'VIEWER' && (
             <Link href="/releases/new" className={LINK}>
               อัปโหลด

@@ -1,9 +1,6 @@
 // โครงตารางของ FlowBook — ใช้ร่วมกันระหว่างตัวแอปและสคริปต์ seed
 // CREATE TABLE IF NOT EXISTS ทั้งหมด จึงรันซ้ำได้เสมอ
 export const SCHEMA = `
-PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
-
 CREATE TABLE IF NOT EXISTS User (
   id TEXT PRIMARY KEY,
   employeeId TEXT NOT NULL UNIQUE,
@@ -19,6 +16,7 @@ CREATE TABLE IF NOT EXISTS ChargerModel (
   code TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   note TEXT NOT NULL DEFAULT '',
+  hardware TEXT NOT NULL DEFAULT '',
   sortOrder INTEGER NOT NULL DEFAULT 0,
   createdAt TEXT NOT NULL
 );
@@ -116,3 +114,50 @@ CREATE INDEX IF NOT EXISTS idx_run_release ON TestRun(releaseId);
 CREATE INDEX IF NOT EXISTS idx_result_run ON TestResult(runId);
 CREATE INDEX IF NOT EXISTS idx_audit_created ON AuditLog(createdAt);
 `;
+
+/**
+ * ตั้งค่าการเชื่อมต่อก่อนใช้งาน
+ *
+ * busy_timeout ทำให้รอแทนที่จะโยน "database is locked" ทันที เวลามีหลายโปรเซสเปิดไฟล์เดียวกัน
+ * (ตอน build ของ Next จะแตกเป็นหลายโปรเซส และเซิร์ฟเวอร์ตัวเก่าก็อาจยังรันอยู่)
+ *
+ * journal_mode = WAL ต้องล็อกไฟล์ชั่วขณะ จึงตั้งเฉพาะตอนที่ยังไม่ใช่ WAL
+ * และถ้าตั้งไม่สำเร็จก็ปล่อยผ่าน เพราะโหมดเดิมยังใช้งานได้อยู่
+ */
+export function prepareConnection(db) {
+  db.exec('PRAGMA busy_timeout = 5000');
+  db.exec('PRAGMA foreign_keys = ON');
+  try {
+    const row = db.prepare('PRAGMA journal_mode').get();
+    if (String(row?.journal_mode ?? '').toLowerCase() !== 'wal') {
+      db.exec('PRAGMA journal_mode = WAL');
+    }
+  } catch {
+    // ใช้โหมดเดิมต่อไปได้ ไม่ต้องล้ม
+  }
+}
+
+/**
+ * ปรับโครงฐานข้อมูลเดิมให้ตรงกับของใหม่ — รันซ้ำได้ ไม่ทำอะไรถ้าปรับไปแล้ว
+ * เรียกทุกครั้งที่เปิดฐานข้อมูล จึงไม่ต้องมีขั้นตอน migrate แยกตอน deploy
+ */
+export function applyMigrations(db) {
+  const columns = (table) => db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+
+  // ย้าย "ฮาร์ดแวร์ที่ใช้ได้" จากระดับเวอร์ชันขึ้นมาอยู่ที่ระดับรุ่นตู้
+  if (!columns('ChargerModel').includes('hardware')) {
+    db.exec("ALTER TABLE ChargerModel ADD COLUMN hardware TEXT NOT NULL DEFAULT ''");
+
+    // ยกค่าเดิมจากเวอร์ชันล่าสุดของแต่ละรุ่นขึ้นมาให้ ข้อมูลเก่าจะได้ไม่หาย
+    const rows = db
+      .prepare("SELECT modelId, hardware FROM Release WHERE hardware <> '' ORDER BY createdAt DESC")
+      .all();
+    const done = new Set();
+    const up = db.prepare("UPDATE ChargerModel SET hardware = ? WHERE id = ? AND hardware = ''");
+    for (const r of rows) {
+      if (done.has(r.modelId)) continue;
+      done.add(r.modelId);
+      up.run(r.hardware, r.modelId);
+    }
+  }
+}

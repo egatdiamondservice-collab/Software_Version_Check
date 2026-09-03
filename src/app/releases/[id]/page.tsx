@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser, atLeast } from '@/lib/auth';
+import { get } from '@/lib/db';
+import type { ModelRow } from '@/lib/types';
 import { Shell } from '@/components/nav';
 import { Btn, BtnLink, Card, Empty, Field, inputClass, Note, PageHead, Pill, StatusPill } from '@/components/ui';
 import {
@@ -33,7 +35,8 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
   const runs = runsOfRelease(release.id);
   const gate = gatePassed(release.id);
   const canEdit = atLeast(user, 'ENGINEER');
-  const hardware = release.hardware.split(',').map((s) => s.trim()).filter(Boolean);
+  const model = get<ModelRow>('SELECT * FROM ChargerModel WHERE id = ?', release.modelId)!;
+  const hardware = model.hardware.split(',').map((s) => s.trim()).filter(Boolean);
 
   return (
     <Shell user={user}>
@@ -136,35 +139,32 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                     placeholder="เช่น แก้ logic แบ่ง power ตอน 3 หัวพร้อมกัน"
                   />
                 </Field>
-                <Field label="ฮาร์ดแวร์ที่ใช้ได้" hint="คั่นด้วยเครื่องหมายจุลภาค">
-                  <input
-                    name="hardware"
-                    defaultValue={release.hardware}
-                    className={inputClass}
-                    placeholder="Sinexcel 40 kW, DWIN HMI, OCPP 1.6J"
-                  />
-                </Field>
                 <Btn type="submit" variant="secondary" className="self-start">
                   บันทึก
                 </Btn>
               </form>
             ) : (
-              <>
-                <p>{release.changelog || <span className="text-ink/50">ไม่ได้ระบุ</span>}</p>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {hardware.map((h) => (
-                    <Pill key={h}>{h}</Pill>
-                  ))}
-                </div>
-              </>
+              <p className="m-0">{release.changelog || <span className="text-ink/50">ไม่ได้ระบุ</span>}</p>
             )}
-            {canEdit && hardware.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {hardware.map((h) => (
-                  <Pill key={h}>{h}</Pill>
-                ))}
-              </div>
-            )}
+          </Card>
+
+          <Card>
+            <h2 className="text-2xl mb-1">ฮาร์ดแวร์ที่ใช้ได้</h2>
+            <p className="text-sm text-ink/70 mb-3">
+              เป็นคุณสมบัติของรุ่น {model.name} ทุกเวอร์ชันของรุ่นนี้ใช้ค่าเดียวกัน
+            </p>
+            <div className="flex flex-wrap gap-2 items-center">
+              {hardware.length > 0 ? (
+                hardware.map((h) => <Pill key={h}>{h}</Pill>)
+              ) : (
+                <span className="text-ink/50">ยังไม่ได้ระบุ</span>
+              )}
+              {canEdit && (
+                <Link href="/models" className="underline decoration-wavy hover:text-accent text-sm ml-2">
+                  แก้ที่หน้ารุ่นตู้
+                </Link>
+              )}
+            </div>
           </Card>
 
           <Card>

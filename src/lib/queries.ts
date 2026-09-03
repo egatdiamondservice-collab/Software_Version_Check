@@ -148,7 +148,7 @@ export function buildSnapshot(templateId: string): TemplateSnapshot {
 
 /**
  * คัดลอก template เป็นเวอร์ชันใหม่ โดย "คง itemKey เดิมไว้"
- * นี่คือหัวใจที่ทำให้ตารางความครอบคลุมเทียบข้ามเวอร์ชันได้
+ * นี่คือหัวใจที่ทำให้สรุปการทดสอบเทียบข้ามเวอร์ชันได้
  */
 export function cloneTemplate(templateId: string): string {
   const src = templateById(templateId)!;

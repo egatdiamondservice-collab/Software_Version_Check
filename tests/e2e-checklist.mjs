@@ -78,10 +78,10 @@ check('ผลทดสอบเก่ายังชี้ checklist v1 (snapsho
   runText.match(/checklist v\d/)?.[0]);
 check('ผลทดสอบเก่ายังไม่มีเคสใหม่ของ v2 ปนเข้ามา', !runText.includes('ตัดเน็ตระหว่างชาร์จ'));
 
-// ตารางความครอบคลุมยังจับคู่เคสเดิมได้ (itemKey สืบต่อ)
+// สรุปการทดสอบยังจับคู่เคสเดิมได้ (itemKey สืบต่อ)
 await p.goto(BASE + '/coverage/VECTOR_DCL');
 const cov = await p.locator('body').innerText();
-check('ตารางความครอบคลุมยังอ่านผลเก่าได้หลังออก checklist ใหม่', cov.includes('Single Connector'));
+check('สรุปการทดสอบยังอ่านผลเก่าได้หลังออก checklist ใหม่', cov.includes('Single Connector'));
 
 await b.close();
 console.log(`\nสรุป: ผ่าน ${pass.length} / ไม่ผ่าน ${fail.length}`);

@@ -13,7 +13,7 @@ function secret(): Uint8Array {
   const s = process.env.SESSION_SECRET;
   if (!s || s.length < 32) {
     throw new Error(
-      'ต้องตั้งค่า SESSION_SECRET ในไฟล์ .env ให้ยาวอย่างน้อย 32 ตัวอักษร'
+      'ยังไม่ได้ตั้ง SESSION_SECRET ในไฟล์ .env (ต้องยาวอย่างน้อย 32 ตัวอักษร) — สั่ง "npm run doctor" เพื่อตรวจ'
     );
   }
   return new TextEncoder().encode(s);

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { Shell } from '@/components/nav';
 import { BtnLink, Card, Empty, PageHead, Pill, StatusPill } from '@/components/ui';
+import { atLeast } from '@/lib/auth';
 import { listReleases, modelByCode, summarize } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +15,7 @@ export default async function ModelPage({ params }: { params: Promise<{ code: st
   if (!model) notFound();
 
   const releases = listReleases(model.id);
+  const hardware = model.hardware.split(',').map((h) => h.trim()).filter(Boolean);
 
   return (
     <Shell user={user}>
@@ -23,13 +25,27 @@ export default async function ModelPage({ params }: { params: Promise<{ code: st
         sub={model.note || `รหัสรุ่น ${model.code}`}
         actions={
           <>
+            <BtnLink href="/models" variant="plain">
+              แก้ข้อมูลรุ่น
+            </BtnLink>
             <BtnLink href={`/coverage/${model.code}`} variant="secondary">
-              ตารางความครอบคลุม
+              สรุปการทดสอบ
             </BtnLink>
             {user.role !== 'VIEWER' && <BtnLink href="/releases/new">อัปโหลดเวอร์ชันใหม่</BtnLink>}
           </>
         }
       />
+
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        <span className="font-head text-lg mr-1">ฮาร์ดแวร์ที่ใช้ได้</span>
+        {hardware.length > 0 ? (
+          hardware.map((h) => <Pill key={h}>{h}</Pill>)
+        ) : (
+          <span className="text-ink/50">
+            ยังไม่ได้ระบุ{atLeast(user, 'ENGINEER') ? ' — ใส่ได้ที่หน้ารุ่นตู้' : ''}
+          </span>
+        )}
+      </div>
 
       {releases.length === 0 ? (
         <Empty>ยังไม่มีเวอร์ชันในรุ่นนี้</Empty>

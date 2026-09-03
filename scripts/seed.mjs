@@ -9,10 +9,30 @@
  */
 
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import bcrypt from 'bcryptjs';
-import { SCHEMA } from './schema.mjs';
+import { SCHEMA, prepareConnection, applyMigrations } from './schema.mjs';
+
+/**
+ * ถ้ายังไม่มี .env ให้สร้างจาก .env.example พร้อมสุ่ม SESSION_SECRET ให้เลย
+ * เพราะขั้นตอน "คัดลอกไฟล์แล้วไปแก้ค่าเอง" คือจุดที่พลาดกันบ่อยที่สุด
+ */
+function ensureEnvFile() {
+  const envPath = path.join(process.cwd(), '.env');
+  const examplePath = path.join(process.cwd(), '.env.example');
+  if (existsSync(envPath) || !existsSync(examplePath)) return;
+
+  const secret = randomBytes(48).toString('base64url');
+  const text = readFileSync(examplePath, 'utf8').replace(
+    /^SESSION_SECRET=.*$/m,
+    `SESSION_SECRET="${secret}"`
+  );
+  writeFileSync(envPath, text, 'utf8');
+  console.log('สร้างไฟล์ .env ให้แล้ว พร้อมสุ่ม SESSION_SECRET ให้เรียบร้อย');
+}
+ensureEnvFile();
 
 // อ่าน .env แบบง่าย ๆ เพื่อไม่ต้องเพิ่ม dependency
 function loadEnv() {
@@ -35,7 +55,9 @@ const dbPath = (() => {
 })();
 
 const db = new DatabaseSync(dbPath);
+prepareConnection(db);
 db.exec(SCHEMA);
+applyMigrations(db);
 
 const now = () => new Date().toISOString();
 const newId = (p) => {
@@ -141,6 +163,12 @@ if (!existsSync(seedFile)) {
     }
     console.log(`  ใส่ checklist v1 ของ ${entry.model.name}: ${entry.sections.length} กลุ่ม ${count} เคส`);
   }
+}
+
+const secret = process.env.SESSION_SECRET || '';
+if (secret.length < 32 || secret.startsWith('change-me')) {
+  console.log('\n*** ยังใช้งานไม่ได้: SESSION_SECRET ในไฟล์ .env ยังไม่ถูกต้อง ***');
+  console.log('    ใส่ค่าสุ่มยาว ๆ ลงไป แล้วรันคำสั่งนี้ใหม่');
 }
 
 console.log(`\nเสร็จแล้ว — ฐานข้อมูลอยู่ที่ ${dbPath}`);

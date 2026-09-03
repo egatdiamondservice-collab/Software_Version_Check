@@ -15,6 +15,7 @@ page.on('pageerror', (e) => fail.push('JS error: ' + e.message));
 
 // 1) ล็อกอิน
 await page.goto(BASE + '/login');
+const addUserForm_page = page.locator('form:has(input[name=employeeId])');
 await page.fill('input[name=employeeId]', 'admin');
 await page.fill('input[name=password]', 'flowbook123');
 await page.click('button[type=submit]');
@@ -32,13 +33,16 @@ await page.setInputFiles('input[type=file]', [
 ]);
 await page.fill('input[name=slots]', 'master,follower');
 await page.fill('textarea[name=changelog]', 'แก้ logic แบ่ง power ตอน 3 หัวพร้อมกัน');
-await page.fill('input[name=hardware]', 'Sinexcel 40 kW, DWIN HMI');
 await page.getByRole('button', { name: 'บันทึกเป็นร่าง' }).click();
 await page.waitForURL(/\/releases\/rel_/);
 const releaseUrl = page.url();
 check('อัปโหลด 2 ไฟล์เป็นชุดเดียว', true);
 check('แสดงชื่อ slot master/follower', (await page.getByText('follower').count()) > 0);
 check('นับ node ในไฟล์ได้', (await page.getByText(/13 node/).count()) > 0, 'master = 1 tab + 12 function');
+check(
+  'หน้าเวอร์ชันดึงฮาร์ดแวร์มาจากรุ่น ไม่ใช่จากตัวเวอร์ชัน',
+  (await page.getByText('เป็นคุณสมบัติของรุ่น', { exact: false }).count()) > 0
+);
 
 // 3) ยังปล่อยใช้งานไม่ได้เพราะไม่มีผลทดสอบ
 const releasedBtn = page.getByRole('button', { name: 'ปล่อยใช้งาน' });
@@ -133,15 +137,16 @@ void resp;
   check('zip มีไฟล์ครบทั้งชุด + ใบกำกับ', names.length === 3 && names.includes('MANIFEST.txt'), names.join(', '));
 }
 
-// 11) ตารางความครอบคลุม
+// 11) สรุปการทดสอบ
 await page.goto(BASE + '/coverage/VECTOR_DCL');
-check('ตารางความครอบคลุมมี 7 คอลัมน์', (await page.locator('thead th').count()) === 8, 'รวมคอลัมน์เวอร์ชัน');
+check('หน้าสรุปการทดสอบมี 7 คอลัมน์', (await page.locator('thead th').count()) === 8, 'รวมคอลัมน์เวอร์ชัน');
+check('หน้าสรุปการทดสอบใช้ชื่อใหม่แล้ว', (await page.locator('h1').innerText()) === 'สรุปการทดสอบ', await page.locator('h1').innerText());
 
 // 12) สิทธิ์ของ Viewer
 await page.goto(BASE + '/admin/users');
 await page.fill('input[name=employeeId]', VIEWER_ID);
 await page.fill('input[name=name]', 'ช่างดู');
-await page.selectOption('select[name=role]', 'VIEWER');
+await addUserForm_page.locator('select[name=role]').selectOption( 'VIEWER');
 await page.getByRole('button', { name: 'เพิ่ม', exact: true }).click();
 await page.waitForTimeout(600);
 check('เพิ่มผู้ใช้ใหม่ได้', (await page.getByText('ช่างดู').count()) > 0);

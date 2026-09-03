@@ -68,8 +68,7 @@ export async function setReleaseStatus(releaseId: string, status: string) {
 export async function updateReleaseMeta(releaseId: string, form: FormData) {
   const user = await requireRole('ENGINEER');
   const changelog = String(form.get('changelog') ?? '');
-  const hardware = String(form.get('hardware') ?? '');
-  run('UPDATE Release SET changelog = ?, hardware = ? WHERE id = ?', changelog, hardware, releaseId);
+  run('UPDATE Release SET changelog = ? WHERE id = ?', changelog, releaseId);
   audit(user.id, 'แก้รายละเอียดเวอร์ชัน', releaseId);
   revalidatePath(`/releases/${releaseId}`);
 }

@@ -27,12 +27,12 @@ export default async function CoveragePage({ params }: { params: Promise<{ code:
     <Shell user={user}>
       <PageHead
         tag={model.name}
-        title="ตารางความครอบคลุม"
-        sub="แถวคือเวอร์ชัน คอลัมน์คือกลุ่มทดสอบ — ช่องสีบอกว่ากลุ่มนั้นผ่านหมดหรือยัง"
+        title="สรุปการทดสอบ"
+        sub="แต่ละเวอร์ชันทดสอบกลุ่มไหนไปแล้วบ้าง และผลออกมาเป็นยังไง"
       />
 
       {rows.length === 0 ? (
-        <Empty>ยังไม่มีข้อมูลพอจะทำตาราง — ต้องมีเวอร์ชันและ checklist ที่เผยแพร่แล้วอย่างน้อยอย่างละหนึ่ง</Empty>
+        <Empty>ยังไม่มีอะไรให้สรุป — ต้องมีเวอร์ชันและ checklist ที่เผยแพร่แล้วอย่างน้อยอย่างละหนึ่ง</Empty>
       ) : (
         <>
           <div className="overflow-x-auto border-2 border-ink wob-sm bg-white shadow-hard">
@@ -98,6 +98,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ code:
         <p className="m-0 text-ink/75">
           ตารางนี้เทียบข้ามเวอร์ชันได้เพราะทุกเคสมีรหัสถาวรอยู่เบื้องหลัง
           เวลาคุณแก้ข้อความของเคสหรือสลับลำดับใน checklist เวอร์ชันใหม่ ผลเก่ายังจับคู่กับเคสเดิมได้ถูกต้อง
+          เอาเมาส์ชี้ที่ช่องสีจะเห็นตัวเลขว่าผ่านกี่เคสจากทั้งหมดกี่เคส
         </p>
       </Card>
     </Shell>

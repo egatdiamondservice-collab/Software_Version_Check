@@ -15,7 +15,6 @@ async function createRelease(formData: FormData) {
   const modelId = String(formData.get('modelId') ?? '');
   const version = String(formData.get('version') ?? '').trim();
   const changelog = String(formData.get('changelog') ?? '');
-  const hardware = String(formData.get('hardware') ?? '');
   const baseReleaseId = String(formData.get('baseReleaseId') ?? '') || null;
 
   if (!modelId || !version) redirect('/releases/new?error=' + encodeURIComponent('เลือกรุ่นและใส่เลขเวอร์ชันด้วย'));
@@ -48,14 +47,13 @@ async function createRelease(formData: FormData) {
 
   const releaseId = newId('rel');
   run(
-    `INSERT INTO Release (id, modelId, version, status, changelog, hardware, baseReleaseId, createdById, createdAt)
-     VALUES (?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO Release (id, modelId, version, status, changelog, baseReleaseId, createdById, createdAt)
+     VALUES (?,?,?,?,?,?,?,?)`,
     releaseId,
     modelId,
     version,
     'DRAFT',
     changelog,
-    hardware,
     baseReleaseId,
     user.id,
     now()
@@ -147,10 +145,6 @@ export default async function NewReleasePage({
             />
           </Field>
 
-          <Field label="ฮาร์ดแวร์ที่ใช้ได้" hint="คั่นด้วยจุลภาค">
-            <input name="hardware" className={inputClass} placeholder="Sinexcel 40 kW, DWIN HMI, OCPP 1.6J" />
-          </Field>
-
           <Field label="แตกมาจากเวอร์ชันไหน" hint="ช่วยให้ตามแก้ bug ข้ามรุ่นได้ตอนมีหลายรุ่น">
             <select name="baseReleaseId" className={inputClass} defaultValue="">
               <option value="">ไม่ระบุ</option>
@@ -165,6 +159,12 @@ export default async function NewReleasePage({
           <Note>
             ระบบจะตรวจก่อนว่าไฟล์เป็น Node-RED flow จริง (array ของ node)
             แล้วเก็บ sha256 ไว้ให้ เพื่อยืนยันภายหลังว่าไฟล์ที่โหลดไปตรงกับต้นฉบับ
+            <br />
+            ฮาร์ดแวร์ที่ใช้ได้ตั้งอยู่ที่{' '}
+            <a href="/models" className="underline decoration-wavy">
+              หน้ารุ่นตู้
+            </a>{' '}
+            เพราะเป็นคุณสมบัติของรุ่น ไม่ใช่ของแต่ละเวอร์ชัน
           </Note>
 
           <Btn type="submit" className="self-start">

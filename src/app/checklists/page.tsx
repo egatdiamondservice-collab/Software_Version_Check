@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { Shell } from '@/components/nav';
-import { Btn, Card, Field, inputClass, PageHead, Pill, StatusPill } from '@/components/ui';
+import { Card, PageHead, Pill, StatusPill } from '@/components/ui';
 import { listModels, templateItemCount, templatesOf } from '@/lib/queries';
-import { createModel } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,25 +49,16 @@ export default async function ChecklistsPage() {
         })}
       </div>
 
-      {isAdmin && (
-        <Card className="mt-8 max-w-2xl" decoration="tack">
-          <h2 className="text-2xl mb-4 pt-2">เพิ่มรุ่นตู้ใหม่</h2>
-          <form action={createModel} className="flex flex-col gap-4">
-            <Field label="รหัสรุ่น" hint="ตัวอักษรอังกฤษและตัวเลข ใช้เป็นชื่อโฟลเดอร์เก็บไฟล์ด้วย">
-              <input name="code" className={inputClass} placeholder="VECTOR_160" required />
-            </Field>
-            <Field label="ชื่อที่แสดง">
-              <input name="name" className={inputClass} placeholder="Vector 160 kW" required />
-            </Field>
-            <Field label="หมายเหตุ">
-              <input name="note" className={inputClass} placeholder="2 หัวชาร์จ CCS2" />
-            </Field>
-            <Btn type="submit" className="self-start">
-              เพิ่มรุ่นและสร้าง checklist ร่าง
-            </Btn>
-          </form>
-        </Card>
-      )}
+      <Card className="mt-8 max-w-2xl" tilt={-0.5}>
+        <p className="m-0 text-ink/75">
+          การเพิ่มรุ่นตู้ใหม่ย้ายไปอยู่ที่หน้า{' '}
+          <Link href="/models/new" className="underline decoration-wavy">
+            เพิ่มรุ่นตู้ใหม่
+          </Link>{' '}
+          — ตอนเพิ่มรุ่นสามารถคัดลอก checklist จากรุ่นเดิมมาตั้งต้นได้เลย
+        </p>
+      </Card>
+
     </Shell>
   );
 }

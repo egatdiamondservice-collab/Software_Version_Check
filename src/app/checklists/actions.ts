@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { get, run, newId, now } from '@/lib/db';
 import { audit, requireRole } from '@/lib/auth';
-import { cloneTemplate, sectionsOf, templateById } from '@/lib/queries';
+import { cloneTemplate, templateById } from '@/lib/queries';
 
 /** ห้ามแก้ template ที่เผยแพร่แล้ว — ต้อง clone เป็นเวอร์ชันใหม่ก่อนเสมอ */
 function assertDraft(templateId: string) {
@@ -123,73 +123,4 @@ export async function deleteItem(templateId: string, itemId: string) {
   assertDraft(templateId);
   run('DELETE FROM ChecklistItem WHERE id = ?', itemId);
   revalidatePath(`/checklists/${templateId}`);
-}
-
-export async function createModel(form: FormData) {
-  const user = await requireRole('ADMIN');
-  const code = String(form.get('code') ?? '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, '_');
-  const name = String(form.get('name') ?? '').trim();
-  if (!code || !name) return;
-  if (get('SELECT id FROM ChargerModel WHERE code = ?', code)) return;
-
-  const modelId = newId('mdl');
-  run(
-    'INSERT INTO ChargerModel (id, code, name, note, sortOrder, createdAt) VALUES (?,?,?,?,?,?)',
-    modelId,
-    code,
-    name,
-    String(form.get('note') ?? ''),
-    99,
-    now()
-  );
-  const tplId = newId('tpl');
-  run(
-    'INSERT INTO ChecklistTemplate (id, modelId, version, status, createdAt) VALUES (?,?,?,?,?)',
-    tplId,
-    modelId,
-    1,
-    'DRAFT',
-    now()
-  );
-  audit(user.id, 'เพิ่มรุ่นตู้', name, code);
-  redirect(`/checklists/${tplId}`);
-}
-
-export async function copyChecklistFromModel(targetTemplateId: string, sourceTemplateId: string) {
-  await requireRole('ADMIN');
-  const target = assertDraft(targetTemplateId);
-  if (sectionsOf(targetTemplateId).length > 0) {
-    throw new Error('คัดลอกได้เฉพาะ checklist ที่ยังว่างอยู่');
-  }
-  // คัดลอกโครงมาแต่ออก itemKey ใหม่ เพราะเป็นเคสของรุ่นอื่น ไม่ใช่เคสเดียวกัน
-  for (const s of sectionsOf(sourceTemplateId)) {
-    const secId = newId('sec');
-    run(
-      'INSERT INTO ChecklistSection (id, templateId, name, sortOrder) VALUES (?,?,?,?)',
-      secId,
-      target.id,
-      s.name,
-      s.sortOrder
-    );
-    const items = get<{ c: number }>('SELECT COUNT(*) c FROM ChecklistItem WHERE sectionId = ?', s.id);
-    void items;
-    for (const i of (await import('@/lib/queries')).itemsOf(s.id)) {
-      run(
-        `INSERT INTO ChecklistItem (id, sectionId, itemKey, testCase, expected, verify, critical, sortOrder)
-         VALUES (?,?,?,?,?,?,?,?)`,
-        newId('itm'),
-        secId,
-        newId('key'),
-        i.testCase,
-        i.expected,
-        i.verify,
-        i.critical,
-        i.sortOrder
-      );
-    }
-  }
-  revalidatePath(`/checklists/${targetTemplateId}`);
 }

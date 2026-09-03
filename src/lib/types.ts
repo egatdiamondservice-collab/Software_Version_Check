@@ -41,6 +41,8 @@ export interface ModelRow {
   code: string;
   name: string;
   note: string;
+  /** ฮาร์ดแวร์ที่รุ่นนี้ใช้ได้ คั่นด้วยจุลภาค — เป็นคุณสมบัติของรุ่น ไม่ใช่ของแต่ละเวอร์ชัน */
+  hardware: string;
   sortOrder: number;
   createdAt: string;
 }
