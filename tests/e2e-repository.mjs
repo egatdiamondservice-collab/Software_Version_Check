@@ -31,13 +31,13 @@ await page.setInputFiles('input[type=file]', [
   `${DIR}/vector_dclink_master_v1.4.json`,
   `${DIR}/vector_dclink_follower_v1.4.json`,
 ]);
-await page.fill('input[name=slots]', 'master,follower');
 await page.fill('textarea[name=changelog]', 'แก้ logic แบ่ง power ตอน 3 หัวพร้อมกัน');
 await page.getByRole('button', { name: 'บันทึกเป็นร่าง' }).click();
 await page.waitForURL(/\/releases\/rel_/);
 const releaseUrl = page.url();
 check('อัปโหลด 2 ไฟล์เป็นชุดเดียว', true);
-check('แสดงชื่อ slot master/follower', (await page.getByText('follower').count()) > 0);
+check('ติดป้ายบทบาท master/follower ให้เองจากชื่อไฟล์', (await page.getByText('follower').count()) > 0);
+check('ฟอร์มอัปโหลดไม่มีช่องบทบาทไฟล์แล้ว', (await page.locator('input[name=slots]').count()) === 0);
 check('นับ node ในไฟล์ได้', (await page.getByText(/13 node/).count()) > 0, 'master = 1 tab + 12 function');
 check(
   'หน้าเวอร์ชันดึงฮาร์ดแวร์มาจากรุ่น ไม่ใช่จากตัวเวอร์ชัน',
@@ -64,7 +64,7 @@ await page.waitForTimeout(500);
 
 // 5) เริ่มทดสอบ
 await page.goto(releaseUrl);
-await page.getByRole('button', { name: /เริ่ม \/ ทำต่อการทดสอบ/ }).click();
+await page.getByRole('button', { name: /เริ่มทดสอบ|ทำต่อการทดสอบ/ }).click();
 await page.waitForURL(/\/runs\/run_/);
 const runUrl = page.url();
 check('เริ่ม test run และ snapshot checklist', true);

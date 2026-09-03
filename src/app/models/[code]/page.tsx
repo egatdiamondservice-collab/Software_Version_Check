@@ -4,7 +4,8 @@ import { requireUser } from '@/lib/auth';
 import { Shell } from '@/components/nav';
 import { BtnLink, Card, Empty, PageHead, Pill, StatusPill } from '@/components/ui';
 import { atLeast } from '@/lib/auth';
-import { listReleases, modelByCode, summarize } from '@/lib/queries';
+import { listReleases, modelByCode, openRunFor, publishedTemplate, summarize } from '@/lib/queries';
+import { startTestRun } from '@/app/releases/[id]/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,13 +17,14 @@ export default async function ModelPage({ params }: { params: Promise<{ code: st
 
   const releases = listReleases(model.id);
   const hardware = model.hardware.split(',').map((h) => h.trim()).filter(Boolean);
+  const canTest = atLeast(user, 'ENGINEER') && !!publishedTemplate(model.id);
 
   return (
     <Shell user={user}>
       <PageHead
         tag="ประวัติของรุ่น"
         title={model.name}
-        sub={model.note || `รหัสรุ่น ${model.code}`}
+        sub={model.note}
         actions={
           <>
             <BtnLink href="/models" variant="plain">
@@ -78,6 +80,21 @@ export default async function ModelPage({ params }: { params: Promise<{ code: st
                 <span className="text-sm text-ink/60">
                   {new Date(r.createdAt).toLocaleDateString('th-TH')} · {r.authorName}
                 </span>
+                {canTest && (
+                  <form
+                    action={async () => {
+                      'use server';
+                      await startTestRun(r.id);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="border-2 border-ink wob-sm px-3 py-1 bg-white text-sm shadow-hardSm hover:bg-accent hover:text-white transition-transform duration-100"
+                    >
+                      {openRunFor(r.id, user.id) ? 'ทำต่อ' : 'ทดสอบ'}
+                    </button>
+                  </form>
+                )}
               </div>
             );
           })}

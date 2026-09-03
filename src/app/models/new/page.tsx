@@ -32,14 +32,9 @@ export default async function NewModelPage({
 
       <Card decoration="tape" className="pt-8 max-w-3xl">
         <form action={createModel} className="flex flex-col gap-5">
-          <div className="grid gap-5 md:grid-cols-2">
-            <Field label="รหัสรุ่น" hint="ตัวอักษรอังกฤษและตัวเลข ใช้เป็นชื่อโฟลเดอร์เก็บไฟล์ด้วย">
-              <input name="code" className={inputClass} placeholder="VECTOR_160" required />
-            </Field>
-            <Field label="ชื่อที่แสดง">
-              <input name="name" className={inputClass} placeholder="Vector 160 kW" required />
-            </Field>
-          </div>
+          <Field label="ชื่อรุ่น">
+            <input name="name" className={inputClass} placeholder="Vector 160 kW" required autoFocus />
+          </Field>
 
           <Field label="หมายเหตุ">
             <input name="note" className={inputClass} placeholder="2 หัวชาร์จ CCS2" />

@@ -53,10 +53,7 @@ export default async function ModelsPage({
                         {m.name}
                       </Link>
                     </h2>
-                    <div className="text-sm text-ink/60">
-                      {m.code}
-                      {m.note ? ` · ${m.note}` : ''}
-                    </div>
+                    {m.note && <div className="text-sm text-ink/60">{m.note}</div>}
                   </div>
                   <Pill tone="neutral">{releaseCount} เวอร์ชัน</Pill>
                   {tpl ? (
@@ -105,6 +102,9 @@ export default async function ModelsPage({
                         >
                           <input name="hardware" defaultValue={m.hardware} className={inputClass} />
                         </Field>
+                      </div>
+                      <div className="md:col-span-2 text-sm text-ink/55">
+                        ไฟล์ของรุ่นนี้เก็บอยู่ที่ <code>data/flows/{m.code}/</code>
                       </div>
                       <div className="md:col-span-2 flex flex-wrap items-center gap-3">
                         <Btn type="submit" variant="secondary">

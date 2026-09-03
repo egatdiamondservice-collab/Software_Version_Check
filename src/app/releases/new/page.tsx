@@ -8,6 +8,18 @@ import { inspectFlowJson, saveFlowFile } from '@/lib/flow';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * เดาบทบาทของไฟล์จากชื่อไฟล์ เพื่อไม่ต้องให้คนกรอกเอง
+ * ชื่อไฟล์ที่ทีมใช้อยู่มีคำว่า master / follower อยู่แล้ว
+ */
+function slotFromFilename(filename: string, index: number, total: number): string {
+  const n = filename.toLowerCase();
+  if (/master|หลัก/.test(n)) return 'master';
+  if (/follower|slave|ตาม/.test(n)) return 'follower';
+  if (total === 1) return 'main';
+  return `ไฟล์ ${index + 1}`;
+}
+
 async function createRelease(formData: FormData) {
   'use server';
   const user = await requireRole('ENGINEER');
@@ -29,11 +41,6 @@ async function createRelease(formData: FormData) {
 
   const files = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
   if (files.length === 0) redirect('/releases/new?error=' + encodeURIComponent('ยังไม่ได้เลือกไฟล์ .json'));
-
-  const slots = String(formData.get('slots') ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
 
   const parsed: Array<{ name: string; text: string; nodeCount: number; tabCount: number }> = [];
   for (const f of files) {
@@ -61,12 +68,13 @@ async function createRelease(formData: FormData) {
 
   parsed.forEach((p, i) => {
     const saved = saveFlowFile(model.code, version, p.name, p.text);
+    const slot = slotFromFilename(p.name, i, parsed.length);
     run(
       `INSERT INTO FlowArtifact (id, releaseId, slot, filename, storedPath, sizeBytes, sha256, nodeCount, tabCount)
        VALUES (?,?,?,?,?,?,?,?,?)`,
       newId('art'),
       releaseId,
-      slots[i] || (parsed.length === 1 ? 'main' : `file${i + 1}`),
+      slot,
       p.name,
       saved.storedPath,
       saved.sizeBytes,
@@ -129,13 +137,6 @@ export default async function NewReleasePage({
             />
           </Field>
 
-          <Field
-            label="ชื่อบทบาทของแต่ละไฟล์"
-            hint="คั่นด้วยจุลภาค เรียงตามลำดับไฟล์ที่เลือก เช่น master,follower — เว้นว่างได้ถ้ามีไฟล์เดียว"
-          >
-            <input name="slots" className={inputClass} placeholder="master,follower" />
-          </Field>
-
           <Field label="สรุปการเปลี่ยนแปลง">
             <textarea
               name="changelog"
@@ -159,6 +160,7 @@ export default async function NewReleasePage({
           <Note>
             ระบบจะตรวจก่อนว่าไฟล์เป็น Node-RED flow จริง (array ของ node)
             แล้วเก็บ sha256 ไว้ให้ เพื่อยืนยันภายหลังว่าไฟล์ที่โหลดไปตรงกับต้นฉบับ
+            ถ้าชื่อไฟล์มีคำว่า master หรือ follower ระบบจะติดป้ายบทบาทให้เอง
             <br />
             ฮาร์ดแวร์ที่ใช้ได้ตั้งอยู่ที่{' '}
             <a href="/models" className="underline decoration-wavy">

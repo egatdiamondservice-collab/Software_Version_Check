@@ -8,6 +8,7 @@ import { Btn, BtnLink, Card, Empty, Field, inputClass, Note, PageHead, Pill, Sta
 import {
   artifactsOf,
   gatePassed,
+  openRunFor,
   releaseById,
   runProgress,
   runsOfRelease,
@@ -51,7 +52,7 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
         }
         actions={
           <>
-            <BtnLink href={`/api/releases/${release.id}/download`} variant="primary">
+            <BtnLink href={`/api/releases/${release.id}/download`} variant="plain">
               ดาวน์โหลดทั้งชุด
             </BtnLink>
             {canEdit && (
@@ -61,8 +62,8 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                   await startTestRun(release.id);
                 }}
               >
-                <Btn type="submit" variant="secondary">
-                  เริ่ม / ทำต่อการทดสอบ
+                <Btn type="submit" variant="primary">
+                  {openRunFor(release.id, user.id) ? 'ทำต่อการทดสอบ' : 'เริ่มทดสอบ'}
                 </Btn>
               </form>
             )}

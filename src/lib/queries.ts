@@ -285,6 +285,13 @@ export function gatePassed(releaseId: string): { ok: boolean; reason: string } {
   return { ok: false, reason: 'ผลทดสอบล่าสุดยังมีเคสที่ไม่ผ่านหรือยังไม่ได้ทดสอบ' };
 }
 
+/** งานทดสอบที่ค้างอยู่ของคนนี้กับเวอร์ชันนี้ ใช้ตัดสินว่าปุ่มควรเขียนว่า "เริ่ม" หรือ "ทำต่อ" */
+export function openRunFor(releaseId: string, userId: string): RunWithMeta | undefined {
+  return runsOfRelease(releaseId).find(
+    (r) => r.status === 'IN_PROGRESS' && r.testerId === userId
+  );
+}
+
 export interface ReleaseSummary {
   release: ReleaseWithMeta;
   progress: RunProgress | null;

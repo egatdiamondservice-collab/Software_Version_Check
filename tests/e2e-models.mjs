@@ -5,7 +5,8 @@
 import { chromium } from 'playwright';
 
 const BASE = 'http://127.0.0.1:3100';
-const CODE = 'VEC160_' + Date.now().toString(36).toUpperCase();
+const MODEL_NAME = 'Vector 160 ' + Date.now().toString(36).toUpperCase();
+const CODE = MODEL_NAME.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
 const pass = [], fail = [];
 const check = (n, ok, x = '') => {
   console.log(`  ${ok ? 'OK ' : 'XX '} ${n}${x ? ' — ' + x : ''}`);
@@ -49,6 +50,10 @@ check(
   'หน้าแรกมีปุ่มเพิ่มรุ่นตู้ให้กดได้เลย',
   (await eng.getByRole('link', { name: '+ เพิ่มรุ่นตู้ใหม่' }).count()) > 0
 );
+check(
+  'หน้าแรกมีปุ่มเริ่มทดสอบบนการ์ดของรุ่นที่มี flow แล้ว',
+  (await eng.getByRole('button', { name: /เริ่มทดสอบ|ทำต่อการทดสอบ/ }).count()) > 0
+);
 
 /* ---- วิศวกรเพิ่มรุ่นเองได้ พร้อมคัดลอก checklist จาก Vector DC Link ---- */
 await eng.goto(BASE + '/models');
@@ -57,9 +62,9 @@ check('วิศวกรเข้าหน้ารุ่นตู้ได้'
 await eng.getByRole('link', { name: '+ เพิ่มรุ่นตู้ใหม่' }).click();
 await eng.waitForURL(/\/models\/new/);
 check('ปุ่มเพิ่มรุ่นอยู่บนหัวหน้า ไม่ต้องเลื่อนหา', true);
-const addForm = eng.locator('form:has(input[name=code])');
-await addForm.locator('input[name=code]').fill(CODE);
-await addForm.locator('input[name=name]').fill('Vector 160 kW');
+const addForm = eng.locator('form:has(select[name=copyFrom])');
+check('ฟอร์มเพิ่มรุ่นไม่มีช่องรหัสรุ่นแล้ว', (await addForm.locator('input[name=code]').count()) === 0);
+await addForm.locator('input[name=name]').fill(MODEL_NAME);
 await addForm.locator('input[name=note]').fill('2 หัวชาร์จ CCS2');
 await addForm.locator('input[name=hardware]').fill('Sinexcel 50 kW, DWIN HMI, OCPP 1.6J');
 await addForm.locator('select[name=copyFrom]').selectOption({ label: 'คัดลอกจาก Vector DC Link' });
@@ -76,7 +81,7 @@ const cl = await eng.locator('body').innerText();
 // จำนวนเคสต้องเท่ากับ checklist ที่ "เผยแพร่อยู่" ของรุ่นต้นทาง ณ ตอนคัดลอก
 // (ชุดทดสอบ checklist อาจดัน Vector DC Link ขึ้น v2 ไปแล้ว จึงไม่ตรึงเป็น 38)
 const srcCount = Number(cl.match(/Vector DC Link[\s\S]*?ใช้อยู่\s*(\d+) เคส/)?.[1] ?? 0);
-const newCount = Number(cl.match(/Vector 160 kW[\s\S]*?ใช้อยู่\s*(\d+) เคส/)?.[1] ?? -1);
+const newCount = Number(cl.match(new RegExp(MODEL_NAME + '[\\s\\S]*?ใช้อยู่\\s*(\\d+) เคส'))?.[1] ?? -1);
 check(
   'checklist ของรุ่นใหม่ถูกคัดลอกมาครบและเผยแพร่แล้ว',
   srcCount > 0 && newCount === srcCount,

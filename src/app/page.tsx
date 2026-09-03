@@ -1,8 +1,16 @@
 import Link from 'next/link';
-import { requireUser } from '@/lib/auth';
+import { requireUser, atLeast } from '@/lib/auth';
 import { Shell } from '@/components/nav';
-import { BtnLink, Card, Empty, Meter, PageHead, Pill, StatusPill } from '@/components/ui';
-import { listModels, listReleases, publishedTemplate, summarize, templateItemCount } from '@/lib/queries';
+import { Btn, BtnLink, Card, Empty, Meter, PageHead, Pill, StatusPill } from '@/components/ui';
+import {
+  listModels,
+  listReleases,
+  openRunFor,
+  publishedTemplate,
+  summarize,
+  templateItemCount,
+} from '@/lib/queries';
+import { startTestRun } from './releases/[id]/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +22,7 @@ export default async function Dashboard({
   const user = await requireUser();
   const { denied } = await searchParams;
   const models = listModels();
+  const canTest = atLeast(user, 'ENGINEER');
 
   return (
     <Shell user={user}>
@@ -58,6 +67,8 @@ export default async function Dashboard({
             const caseCount = tpl ? templateItemCount(tpl.id) : 0;
             const p = summary?.progress ?? null;
             const tilt = idx % 3 === 0 ? -1 : idx % 3 === 2 ? 1 : 0;
+            const openRun = latest && canTest ? openRunFor(latest.id, user.id) : undefined;
+            const testable = latest && canTest && !!tpl;
 
             return (
               <Card key={m.id} decoration="tack" tilt={tilt} className="pt-7">
@@ -95,6 +106,26 @@ export default async function Dashboard({
                   </>
                 ) : (
                   <div className="text-ink/60 mt-3">ยังไม่มี Flow ในรุ่นนี้</div>
+                )}
+
+                {testable && (
+                  <form
+                    action={async () => {
+                      'use server';
+                      await startTestRun(latest.id);
+                    }}
+                    className="mt-4"
+                  >
+                    <Btn type="submit" className="w-full text-lg">
+                      {openRun ? 'ทำต่อการทดสอบ' : 'เริ่มทดสอบ'} {latest.version}
+                    </Btn>
+                  </form>
+                )}
+
+                {latest && canTest && !tpl && (
+                  <div className="mt-4 text-sm text-ink/60">
+                    ทดสอบไม่ได้ — รุ่นนี้ยังไม่มี checklist ที่เผยแพร่
+                  </div>
                 )}
 
                 <div className="mt-5 flex flex-wrap gap-3 text-base">

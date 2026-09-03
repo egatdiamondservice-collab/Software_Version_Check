@@ -14,22 +14,43 @@ import type { ModelRow } from '@/lib/types';
  * เพราะเนื้อหาผ่านการอนุมัติมาแล้วในรุ่นต้นทาง วิศวกรจะได้เริ่มทดสอบได้เลย
  * ถ้าเริ่มจากศูนย์ จะเป็นร่างรอ admin ใส่เคสและกดเผยแพร่
  */
+/**
+ * รหัสรุ่นใช้เป็นชื่อโฟลเดอร์เก็บไฟล์และเป็นส่วนหนึ่งของ URL
+ * จึงต้องเป็นอักษรอังกฤษล้วน — สร้างจากชื่อที่ผู้ใช้กรอกให้เอง
+ * ถ้าชื่อเป็นภาษาไทยล้วนจนตัดแล้วไม่เหลืออะไร ก็ออกรหัสสุ่มให้แทน
+ */
+function codeFromName(name: string): string {
+  const base = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 40);
+  return base || 'MODEL';
+}
+
+function uniqueCode(name: string): string {
+  const base = codeFromName(name);
+  let code = base;
+  let n = 2;
+  while (get('SELECT id FROM ChargerModel WHERE code = ?', code)) {
+    code = `${base}_${n++}`;
+  }
+  return code;
+}
+
 export async function createModel(form: FormData) {
   const user = await requireRole('ENGINEER');
 
-  const code = String(form.get('code') ?? '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, '_');
   const name = String(form.get('name') ?? '').trim();
   const note = String(form.get('note') ?? '').trim();
   const hardware = String(form.get('hardware') ?? '').trim();
   const copyFromModelId = String(form.get('copyFrom') ?? '');
 
-  if (!code || !name) redirect('/models/new?error=' + encodeURIComponent('ต้องใส่ทั้งรหัสรุ่นและชื่อที่แสดง'));
-  if (get('SELECT id FROM ChargerModel WHERE code = ?', code)) {
-    redirect('/models/new?error=' + encodeURIComponent(`มีรหัสรุ่น ${code} อยู่แล้ว`));
+  if (!name) redirect('/models/new?error=' + encodeURIComponent('ต้องใส่ชื่อรุ่น'));
+  if (get('SELECT id FROM ChargerModel WHERE name = ?', name)) {
+    redirect('/models/new?error=' + encodeURIComponent(`มีรุ่นชื่อ "${name}" อยู่แล้ว`));
   }
+  const code = uniqueCode(name);
 
   const max = get<{ n: number | null }>('SELECT MAX(sortOrder) AS n FROM ChargerModel');
   const modelId = newId('mdl');
