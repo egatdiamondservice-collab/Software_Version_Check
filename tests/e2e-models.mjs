@@ -51,8 +51,8 @@ check(
   (await eng.getByRole('link', { name: '+ เพิ่มรุ่นตู้ใหม่' }).count()) > 0
 );
 check(
-  'หน้าแรกมีปุ่มเริ่มทดสอบบนการ์ดของรุ่นที่มี flow แล้ว',
-  (await eng.getByRole('button', { name: /เริ่มทดสอบ|ทำต่อการทดสอบ/ }).count()) > 0
+  'หน้าแรกมีปุ่มดาวน์โหลดเวอร์ชันที่ใช้งานอยู่',
+  (await eng.locator('a[href^="/api/releases/"][href$="/download"]').count()) > 0
 );
 
 /* ---- วิศวกรเพิ่มรุ่นเองได้ พร้อมคัดลอก checklist จาก Vector DC Link ---- */
@@ -76,12 +76,14 @@ const modelText = await eng.locator('body').innerText();
 check('หน้ารุ่นแสดงฮาร์ดแวร์ที่กรอกไว้', modelText.includes('Sinexcel 50 kW') && modelText.includes('OCPP 1.6J'));
 
 /* ---- checklist ที่คัดลอกมาต้องเผยแพร่แล้วและมีเคสครบ ---- */
-await eng.goto(BASE + '/checklists');
-const cl = await eng.locator('body').innerText();
 // จำนวนเคสต้องเท่ากับ checklist ที่ "เผยแพร่อยู่" ของรุ่นต้นทาง ณ ตอนคัดลอก
-// (ชุดทดสอบ checklist อาจดัน Vector DC Link ขึ้น v2 ไปแล้ว จึงไม่ตรึงเป็น 38)
-const srcCount = Number(cl.match(/Vector DC Link[\s\S]*?ใช้อยู่\s*(\d+) เคส/)?.[1] ?? 0);
-const newCount = Number(cl.match(new RegExp(MODEL_NAME + '[\\s\\S]*?ใช้อยู่\\s*(\\d+) เคส'))?.[1] ?? -1);
+const countOf = async (code) => {
+  await eng.goto(BASE + `/models/${code}/checklist`);
+  const t = await eng.locator('body').innerText();
+  return Number(t.match(/ใช้อยู่ v\d+[\s\S]*?(\d+) เคส/)?.[1] ?? -1);
+};
+const srcCount = await countOf('VECTOR_DCL');
+const newCount = await countOf(CODE);
 check(
   'checklist ของรุ่นใหม่ถูกคัดลอกมาครบและเผยแพร่แล้ว',
   srcCount > 0 && newCount === srcCount,

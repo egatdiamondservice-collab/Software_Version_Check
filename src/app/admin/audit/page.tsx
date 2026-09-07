@@ -35,19 +35,19 @@ export default async function AuditPage() {
       {logs.length === 0 ? (
         <Empty>ยังไม่มีบันทึก</Empty>
       ) : (
-        <div className="overflow-x-auto border-2 border-ink wob-sm bg-white shadow-hard">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-card">
           <table className="w-full min-w-[640px] border-collapse">
             <thead>
-              <tr className="bg-muted border-b-2 border-ink">
-                <th className="text-left px-4 py-2 font-head">เมื่อไหร่</th>
-                <th className="text-left px-4 py-2 font-head">ใคร</th>
-                <th className="text-left px-4 py-2 font-head">ทำอะไร</th>
-                <th className="text-left px-4 py-2 font-head">กับอะไร</th>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-left px-4 py-2 font-medium">เมื่อไหร่</th>
+                <th className="text-left px-4 py-2 font-medium">ใคร</th>
+                <th className="text-left px-4 py-2 font-medium">ทำอะไร</th>
+                <th className="text-left px-4 py-2 font-medium">กับอะไร</th>
               </tr>
             </thead>
             <tbody>
               {logs.map((l) => (
-                <tr key={l.id} className="border-b border-dashed border-ink/35">
+                <tr key={l.id} className="border-b border-gray-100">
                   <td className="px-4 py-2 text-sm whitespace-nowrap tabular-nums">
                     {new Date(l.createdAt).toLocaleString('th-TH')}
                   </td>
@@ -55,7 +55,7 @@ export default async function AuditPage() {
                     {l.userName ? `${l.userName} (${l.employeeId})` : '—'}
                   </td>
                   <td className="px-4 py-2">{l.action}</td>
-                  <td className="px-4 py-2 text-sm text-ink/75">
+                  <td className="px-4 py-2 text-sm text-gray-600">
                     {l.target}
                     {l.detail ? ` · ${l.detail}` : ''}
                   </td>

@@ -34,7 +34,8 @@ await page.setInputFiles('input[type=file]', [
 await page.fill('textarea[name=changelog]', 'แก้ logic แบ่ง power ตอน 3 หัวพร้อมกัน');
 await page.getByRole('button', { name: 'บันทึกเป็นร่าง' }).click();
 await page.waitForURL(/\/releases\/rel_/);
-const releaseUrl = page.url();
+const createdUrl = page.url(); // มี ?created=1 ต่อท้าย
+const releaseUrl = createdUrl.split('?')[0];
 check('อัปโหลด 2 ไฟล์เป็นชุดเดียว', true);
 check('ติดป้ายบทบาท master/follower ให้เองจากชื่อไฟล์', (await page.getByText('follower').count()) > 0);
 check('ฟอร์มอัปโหลดไม่มีช่องบทบาทไฟล์แล้ว', (await page.locator('input[name=slots]').count()) === 0);
@@ -62,9 +63,10 @@ await page.waitForTimeout(500);
   check('ปฏิเสธไฟล์ที่ไม่ใช่ Node-RED flow', txt.includes('ไม่ใช่ Node-RED flow'), txt.replace(/\n+/g, ' | ').slice(0, 200));
 }
 
-// 5) เริ่มทดสอบ
-await page.goto(releaseUrl);
-await page.getByRole('button', { name: /เริ่มทดสอบ|ทำต่อการทดสอบ/ }).click();
+// 5) เริ่มทดสอบ — จากแถบที่ขึ้นหลังอัปโหลด
+await page.goto(createdUrl);
+check('หลังอัปโหลดมีแถบถามว่าจะเริ่มทดสอบเลยไหม', (await page.getByRole('button', { name: 'เริ่มทดสอบเลย' }).count()) > 0);
+await page.getByRole('button', { name: 'เริ่มทดสอบเลย' }).click();
 await page.waitForURL(/\/runs\/run_/);
 const runUrl = page.url();
 check('เริ่ม test run และ snapshot checklist', true);
@@ -101,6 +103,7 @@ await submit.click();
 await page.waitForTimeout(1500);
 await page.reload();
 check('ส่งแล้วหน้ากลายเป็นอ่านอย่างเดียว', (await page.getByText('ส่งแล้ว').count()) > 0);
+check('ส่งผลแล้วมีปุ่มปล่อยใช้งานให้กดตรงนั้นเลย', (await page.getByRole('button', { name: /^ปล่อยใช้งาน / }).count()) > 0);
 
 // 9) ตอนนี้ปล่อยใช้งานได้
 await page.goto(releaseUrl);
@@ -140,7 +143,7 @@ void resp;
 // 11) สรุปการทดสอบ
 await page.goto(BASE + '/coverage/VECTOR_DCL');
 check('หน้าสรุปการทดสอบมี 7 คอลัมน์', (await page.locator('thead th').count()) === 8, 'รวมคอลัมน์เวอร์ชัน');
-check('หน้าสรุปการทดสอบใช้ชื่อใหม่แล้ว', (await page.locator('h1').innerText()) === 'สรุปการทดสอบ', await page.locator('h1').innerText());
+check('ลิงก์เก่า /coverage พาไปแท็บสรุปการทดสอบของรุ่น', page.url().endsWith('/models/VECTOR_DCL/summary'), page.url());
 
 // 12) สิทธิ์ของ Viewer
 await page.goto(BASE + '/admin/users');

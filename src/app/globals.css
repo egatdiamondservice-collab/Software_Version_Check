@@ -8,9 +8,7 @@
   }
 
   body {
-    @apply bg-paper text-ink font-body;
-    background-image: radial-gradient(#e5e0d8 1px, transparent 1px);
-    background-size: 24px 24px;
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
     min-height: 100vh;
   }
 
@@ -18,32 +16,22 @@
   h2,
   h3,
   h4 {
-    @apply font-head font-normal;
+    @apply font-semibold tracking-tight text-gray-900;
     text-wrap: balance;
   }
 
-  /* โฟกัสต้องเห็นชัดเพราะหน้าติ๊กใช้คีย์บอร์ดได้ด้วย */
   :focus-visible {
-    outline: 3px solid #2d5da1;
-    outline-offset: 2px;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
   }
 
   input,
   textarea,
   select {
-    @apply font-body;
+    @apply font-sans;
   }
-}
 
-@layer components {
-  .wob {
-    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-  }
-  .wob-md {
-    border-radius: 35px 6px 30px 6px / 6px 30px 6px 35px;
-  }
-  .wob-sm {
-    border-radius: 14px 4px 12px 4px / 4px 12px 4px 14px;
+  code {
+    @apply rounded bg-gray-100 px-1.5 py-0.5 text-[0.9em] text-gray-800;
   }
 }
 

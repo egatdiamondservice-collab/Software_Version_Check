@@ -12,55 +12,54 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         style={{
           margin: 0,
           minHeight: '100vh',
-          background: '#fdfbf7',
-          backgroundImage: 'radial-gradient(#e5e0d8 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          color: '#2d2d2d',
-          fontFamily: "'Mali','Comic Sans MS',Tahoma,sans-serif",
+          background: '#f9fafb',
+          color: '#111827',
+          fontFamily: "Inter, 'Noto Sans Thai', 'Segoe UI', Tahoma, system-ui, sans-serif",
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: 24,
-          lineHeight: 1.75,
+          lineHeight: 1.6,
         }}
       >
         <div
           style={{
-            maxWidth: 620,
+            maxWidth: 560,
             background: '#fff',
-            border: '3px solid #2d2d2d',
-            borderRadius: '35px 6px 30px 6px / 6px 30px 6px 35px',
-            boxShadow: '8px 8px 0 0 #2d2d2d',
-            padding: '32px 28px',
+            border: '1px solid #e5e7eb',
+            borderRadius: 12,
+            boxShadow: '0 1px 3px rgba(0,0,0,.06)',
+            padding: '28px 28px',
           }}
         >
-          <h1 style={{ fontSize: 32, margin: '0 0 8px' }}>เซิร์ฟเวอร์ทำงานผิดพลาด</h1>
-          <p style={{ margin: '0 0 20px', color: 'rgba(45,45,45,.75)' }}>
+          <h1 style={{ fontSize: 22, margin: '0 0 8px', fontWeight: 600 }}>เซิร์ฟเวอร์ทำงานผิดพลาด</h1>
+          <p style={{ margin: '0 0 16px', color: '#4b5563', fontSize: 14 }}>
             รายละเอียดของข้อผิดพลาดถูกเขียนไว้ที่ console หรือ log ของเซิร์ฟเวอร์
             หน้าเว็บจะไม่แสดงให้เห็นด้วยเหตุผลด้านความปลอดภัย
           </p>
 
           <div
             style={{
-              background: '#fff9c4',
-              border: '2px solid #2d2d2d',
-              borderRadius: '14px 4px 12px 4px / 4px 12px 4px 14px',
-              padding: '14px 18px',
-              marginBottom: 20,
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: 8,
+              padding: '12px 16px',
+              marginBottom: 16,
+              fontSize: 14,
             }}
           >
             <b>ตรวจหาสาเหตุด้วยคำสั่งนี้บนเซิร์ฟเวอร์</b>
-            <pre style={{ margin: '8px 0 0', fontSize: 15, whiteSpace: 'pre-wrap' }}>npm run doctor</pre>
+            <pre style={{ margin: '6px 0 0', fontSize: 14, whiteSpace: 'pre-wrap' }}>npm run doctor</pre>
           </div>
 
-          <p style={{ margin: '0 0 20px', fontSize: 15, color: 'rgba(45,45,45,.7)' }}>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#6b7280' }}>
             สาเหตุที่พบบ่อย: Node เก่ากว่า 22.5 · service ไม่ได้ตั้ง Startup directory ให้ชี้มาที่โฟลเดอร์โปรเจกต์ ·
-            เขียนโฟลเดอร์ <code>data</code> ไม่ได้ · ยังไม่ได้ตั้ง <code>SESSION_SECRET</code> ·
-            ยังไม่ได้สั่ง <code>npm run seed</code>
+            เขียนโฟลเดอร์ data ไม่ได้ · ยังไม่ได้ตั้ง SESSION_SECRET · ยังไม่ได้สั่ง npm run seed ·
+            มีเซิร์ฟเวอร์ตัวเก่ารันค้างอยู่ (database is locked)
           </p>
 
           {error.digest && (
-            <p style={{ margin: '0 0 20px', fontSize: 13, color: 'rgba(45,45,45,.55)' }}>
+            <p style={{ margin: '0 0 16px', fontSize: 12, color: '#9ca3af' }}>
               รหัสอ้างอิงสำหรับค้นใน log: {error.digest}
             </p>
           )}
@@ -68,15 +67,16 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <button
             onClick={reset}
             style={{
-              minHeight: 48,
-              padding: '0 24px',
-              fontSize: 17,
+              minHeight: 40,
+              padding: '0 16px',
+              fontSize: 14,
+              fontWeight: 500,
               fontFamily: 'inherit',
               cursor: 'pointer',
-              background: '#fff',
-              border: '3px solid #2d2d2d',
-              borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px',
-              boxShadow: '4px 4px 0 0 #2d2d2d',
+              background: '#2563eb',
+              color: '#fff',
+              border: '1px solid #2563eb',
+              borderRadius: 6,
             }}
           >
             ลองใหม่อีกครั้ง

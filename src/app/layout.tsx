@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#fdfbf7',
+  themeColor: '#f9fafb',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -19,9 +19,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* ถ้าโหลดไม่ได้จะตกไปใช้ Segoe UI / Tahoma ของ Windows ซึ่งอ่านไทยได้ปกติ */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Sriracha&family=Mali:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"
         />
       </head>
       <body>{children}</body>

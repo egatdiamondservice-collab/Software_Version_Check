@@ -68,11 +68,11 @@ export default async function UsersPage() {
           {users.map((u) => (
             <div
               key={u.id}
-              className={`border-2 border-ink wob-sm px-4 py-3 flex flex-wrap items-center gap-3 ${
-                u.active ? 'bg-white' : 'bg-muted'
+              className={`rounded-lg border border-gray-200 px-4 py-3 flex flex-wrap items-center gap-3 ${
+                u.active ? 'bg-white' : 'bg-gray-50 text-gray-500'
               }`}
             >
-              <span className="font-head text-lg min-w-[92px]">{u.employeeId}</span>
+              <span className="font-medium min-w-[92px] tabular-nums">{u.employeeId}</span>
               <span className="flex-1 min-w-[140px]">{u.name}</span>
               {!u.passwordHash && <Pill tone="yellow">ยังไม่ตั้งรหัสผ่าน</Pill>}
               {!u.active && <Pill tone="grey">ปิดใช้งาน</Pill>}
@@ -87,7 +87,7 @@ export default async function UsersPage() {
                 <select
                   name="role"
                   defaultValue={u.role}
-                  className="border-2 border-ink wob-sm px-2 py-1 bg-white text-sm"
+                  className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
                 >
                   {(['VIEWER', 'ENGINEER', 'ADMIN'] as Role[]).map((r) => (
                     <option key={r} value={r}>
@@ -95,7 +95,7 @@ export default async function UsersPage() {
                     </option>
                   ))}
                 </select>
-                <button type="submit" className="border-2 border-ink wob-sm px-2 py-1 bg-muted text-sm shadow-hardSm">
+                <button type="submit" className="rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-sm text-gray-700 hover:bg-gray-200">
                   ตั้ง
                 </button>
               </form>
@@ -106,7 +106,7 @@ export default async function UsersPage() {
                   await resetPassword(u.id);
                 }}
               >
-                <button type="submit" className="border-2 border-ink wob-sm px-2 py-1 bg-white text-sm shadow-hardSm">
+                <button type="submit" className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 hover:bg-gray-50">
                   ล้างรหัสผ่าน
                 </button>
               </form>
@@ -120,7 +120,7 @@ export default async function UsersPage() {
                 >
                   <button
                     type="submit"
-                    className="border-2 border-ink wob-sm px-2 py-1 bg-white text-sm shadow-hardSm hover:bg-accent hover:text-white"
+                    className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     {u.active ? 'ปิดใช้งาน' : 'เปิดใช้งาน'}
                   </button>
@@ -130,8 +130,8 @@ export default async function UsersPage() {
           ))}
         </div>
 
-        <Card decoration="tack" className="pt-7 self-start" tilt={1}>
-          <h2 className="text-2xl mb-4">เพิ่มผู้ใช้</h2>
+        <Card className="self-start">
+          <h2 className="text-lg mb-4">เพิ่มผู้ใช้</h2>
           <form action={addUser} className="flex flex-col gap-4">
             <Field label="รหัสพนักงาน">
               <input name="employeeId" className={inputClass} required />

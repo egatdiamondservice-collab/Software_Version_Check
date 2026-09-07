@@ -63,6 +63,9 @@ export async function setReleaseStatus(releaseId: string, status: string) {
 
   audit(user.id, 'เปลี่ยนสถานะเวอร์ชัน', `${release.modelName} ${release.version}`, status);
   revalidatePath(`/releases/${releaseId}`);
+  revalidatePath('/');
+  // ปุ่มนี้ถูกกดได้จากหลายหน้า (หน้าเวอร์ชัน / หน้าผลทดสอบ) — พาไปหน้าเวอร์ชันเสมอเพื่อให้เห็นผล
+  redirect(`/releases/${releaseId}?released=1`);
 }
 
 export async function updateReleaseMeta(releaseId: string, form: FormData) {

@@ -3,7 +3,7 @@ import { requireRole, audit } from '@/lib/auth';
 import { get, run, newId, now } from '@/lib/db';
 import { Shell } from '@/components/nav';
 import { Btn, Card, Field, inputClass, Note, PageHead } from '@/components/ui';
-import { listModels, listReleases } from '@/lib/queries';
+import { listModels } from '@/lib/queries';
 import { inspectFlowJson, saveFlowFile } from '@/lib/flow';
 
 export const dynamic = 'force-dynamic';
@@ -27,12 +27,16 @@ async function createRelease(formData: FormData) {
   const modelId = String(formData.get('modelId') ?? '');
   const version = String(formData.get('version') ?? '').trim();
   const changelog = String(formData.get('changelog') ?? '');
-  const baseReleaseId = String(formData.get('baseReleaseId') ?? '') || null;
 
   if (!modelId || !version) redirect('/releases/new?error=' + encodeURIComponent('เลือกรุ่นและใส่เลขเวอร์ชันด้วย'));
 
   const model = get<{ code: string; name: string }>('SELECT code, name FROM ChargerModel WHERE id = ?', modelId);
   if (!model) redirect('/releases/new?error=' + encodeURIComponent('ไม่พบรุ่นนี้'));
+
+  // ผูกกับเวอร์ชันล่าสุดของรุ่นเดียวกันให้เอง — เกือบทุกครั้งคือคำตอบที่ถูก ไม่ต้องถาม
+  const baseReleaseId =
+    get<{ id: string }>('SELECT id FROM Release WHERE modelId = ? ORDER BY createdAt DESC LIMIT 1', modelId)?.id ??
+    null;
 
   const dup = get('SELECT id FROM Release WHERE modelId = ? AND version = ?', modelId, version);
   if (dup) {
@@ -85,7 +89,7 @@ async function createRelease(formData: FormData) {
   });
 
   audit(user.id, 'อัปโหลดเวอร์ชันใหม่', `${model.name} ${version}`, `${parsed.length} ไฟล์`);
-  redirect(`/releases/${releaseId}`);
+  redirect(`/releases/${releaseId}?created=1`);
 }
 
 export default async function NewReleasePage({
@@ -96,15 +100,14 @@ export default async function NewReleasePage({
   const user = await requireRole('ENGINEER');
   const { error, model } = await searchParams;
   const models = listModels();
-  const allReleases = listReleases();
 
   return (
     <Shell user={user}>
       <PageHead tag="อัปโหลด" title="เวอร์ชันใหม่" sub="เลขเวอร์ชันพิมพ์เองได้อิสระ ขอแค่ไม่ซ้ำของเดิมในรุ่นเดียวกัน" />
 
-      {error && <div className="mb-6 border-2 border-ink wob-sm bg-[#ffdede] px-4 py-3">{error}</div>}
+      {error && <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
 
-      <Card decoration="tape" className="pt-8 max-w-3xl">
+      <Card className="max-w-3xl">
         <form action={createRelease} className="flex flex-col gap-5">
           <Field label="รุ่นตู้">
             <select name="modelId" defaultValue={model ?? ''} className={inputClass} required>
@@ -133,11 +136,11 @@ export default async function NewReleasePage({
               accept=".json,application/json"
               multiple
               required
-              className="w-full bg-white border-2 border-dashed border-ink wob-sm px-4 py-6 file:mr-4 file:border-2 file:border-ink file:bg-muted file:px-4 file:py-1 file:wob-sm file:font-body"
+              className="w-full bg-white border border-gray-300 rounded-md px-4 py-6 file:mr-4 file:border-2 file:border-gray-300 file:bg-gray-100 file:px-4 file:py-1 file:rounded-md file:"
             />
           </Field>
 
-          <Field label="สรุปการเปลี่ยนแปลง">
+          <Field label="สรุปการเปลี่ยนแปลง" hint="ไม่บังคับ แต่ช่วยทีมมากตอนย้อนดู">
             <textarea
               name="changelog"
               rows={3}
@@ -146,16 +149,6 @@ export default async function NewReleasePage({
             />
           </Field>
 
-          <Field label="แตกมาจากเวอร์ชันไหน" hint="ช่วยให้ตามแก้ bug ข้ามรุ่นได้ตอนมีหลายรุ่น">
-            <select name="baseReleaseId" className={inputClass} defaultValue="">
-              <option value="">ไม่ระบุ</option>
-              {allReleases.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.modelName} · {r.version}
-                </option>
-              ))}
-            </select>
-          </Field>
 
           <Note>
             ระบบจะตรวจก่อนว่าไฟล์เป็น Node-RED flow จริง (array ของ node)
@@ -163,7 +156,7 @@ export default async function NewReleasePage({
             ถ้าชื่อไฟล์มีคำว่า master หรือ follower ระบบจะติดป้ายบทบาทให้เอง
             <br />
             ฮาร์ดแวร์ที่ใช้ได้ตั้งอยู่ที่{' '}
-            <a href="/models" className="underline decoration-wavy">
+            <a href="/models" className="text-brand-600 hover:underline">
               หน้ารุ่นตู้
             </a>{' '}
             เพราะเป็นคุณสมบัติของรุ่น ไม่ใช่ของแต่ละเวอร์ชัน

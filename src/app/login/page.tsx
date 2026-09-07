@@ -11,14 +11,14 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center px-5 py-16">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl -rotate-1 inline-block">FlowBook</h1>
-          <p className="mt-2 text-ink/70">คลัง Flow ตู้ชาร์จ และ checklist ทดสอบ</p>
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl">FlowBook</h1>
+          <p className="mt-1 text-sm text-gray-600">คลัง Flow ตู้ชาร์จ และ checklist ทดสอบ</p>
         </div>
 
-        <Card decoration="tape" tilt={-0.7}>
-          <form action={formAction} className="flex flex-col gap-5 pt-2">
+        <Card>
+          <form action={formAction} className="flex flex-col gap-4">
             <Field label="รหัสพนักงาน">
               <input
                 name="employeeId"
@@ -46,19 +46,16 @@ export default function LoginPage() {
               </Field>
             )}
 
-            {state.error && (
-              <Note tone={state.needsPassword ? 'yellow' : 'red'}>{state.error}</Note>
-            )}
+            {state.error && <Note tone={state.needsPassword ? 'info' : 'danger'}>{state.error}</Note>}
 
-            <Btn type="submit" disabled={pending}>
+            <Btn type="submit" disabled={pending} className="w-full">
               {pending ? 'กำลังเข้า…' : state.needsPassword ? 'ตั้งรหัสผ่านและเข้าใช้งาน' : 'เข้าใช้งาน'}
             </Btn>
           </form>
         </Card>
 
-        <p className="text-center text-sm text-ink/60 mt-6">
-          ไม่มีสมัครเอง — ผู้ดูแลระบบเป็นคนเพิ่มรหัสพนักงานให้
-          แล้วคุณตั้งรหัสผ่านเองตอนเข้าครั้งแรก
+        <p className="text-center text-xs text-gray-500 mt-5">
+          ไม่มีสมัครเอง — ผู้ดูแลระบบเป็นคนเพิ่มรหัสพนักงานให้ แล้วคุณตั้งรหัสผ่านเองตอนเข้าครั้งแรก
         </p>
       </div>
     </main>

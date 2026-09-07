@@ -1,19 +1,25 @@
 import Link from 'next/link';
 import { requireUser, atLeast } from '@/lib/auth';
 import { Shell } from '@/components/nav';
-import { Btn, BtnLink, Card, Empty, Meter, PageHead, Pill, StatusPill } from '@/components/ui';
+import { Btn, BtnLink, Card, Empty, ErrorBanner, Meter, PageHead, Pill, StatusPill, linkClass } from '@/components/ui';
 import {
+  inProgressOf,
   listModels,
-  listReleases,
   openRunFor,
   publishedTemplate,
+  releasedOf,
   summarize,
-  templateItemCount,
 } from '@/lib/queries';
 import { startTestRun } from './releases/[id]/actions';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * หน้าแรก = หน้าใช้งาน
+ * การ์ดแต่ละรุ่นตอบสองคำถามที่คนเปิดมาถามบ่อยที่สุด
+ *   1. "โหลดตัวไหนไปลงตู้"      → ปุ่มดาวน์โหลดเวอร์ชันที่ปล่อยใช้งาน
+ *   2. "ตัวใหม่ทดสอบถึงไหนแล้ว"  → แถบความคืบหน้า + ปุ่มทดสอบ
+ */
 export default async function Dashboard({
   searchParams,
 }: {
@@ -29,9 +35,9 @@ export default async function Dashboard({
       <PageHead
         tag="หน้าแรก"
         title="รุ่นตู้ทั้งหมด"
-        sub="แต่ละรุ่นใช้ Flow เวอร์ชันอะไร และผ่านการทดสอบหรือยัง"
+        sub="เวอร์ชันที่ใช้งานอยู่ และเวอร์ชันใหม่ที่กำลังทดสอบ"
         actions={
-          user.role !== 'VIEWER' ? (
+          canTest ? (
             <>
               <BtnLink href="/models/new" variant="secondary">
                 + เพิ่มรุ่นตู้ใหม่
@@ -42,97 +48,111 @@ export default async function Dashboard({
         }
       />
 
-      {denied && (
-        <div className="mb-6 border-2 border-ink wob-sm bg-[#ffdede] px-4 py-3">
-          สิทธิ์ของคุณไม่ถึงสำหรับหน้านั้น
-        </div>
-      )}
+      {denied && <ErrorBanner>สิทธิ์ของคุณไม่ถึงสำหรับหน้านั้น</ErrorBanner>}
 
       {models.length === 0 ? (
         <Empty>
           ยังไม่มีรุ่นตู้ในระบบ
-          {user.role !== 'VIEWER' && (
+          {canTest && (
             <div className="mt-4">
               <BtnLink href="/models/new">+ เพิ่มรุ่นตู้ใหม่</BtnLink>
             </div>
           )}
         </Empty>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {models.map((m, idx) => {
-            const releases = listReleases(m.id);
-            const latest = releases[0];
-            const summary = latest ? summarize(latest) : null;
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {models.map((m) => {
+            const released = releasedOf(m.id);
+            const working = inProgressOf(m.id);
             const tpl = publishedTemplate(m.id);
-            const caseCount = tpl ? templateItemCount(tpl.id) : 0;
-            const p = summary?.progress ?? null;
-            const tilt = idx % 3 === 0 ? -1 : idx % 3 === 2 ? 1 : 0;
-            const openRun = latest && canTest ? openRunFor(latest.id, user.id) : undefined;
-            const testable = latest && canTest && !!tpl;
+            const progress = working ? summarize(working).progress : null;
+            const openRun = working && canTest ? openRunFor(working.id, user.id) : undefined;
 
             return (
-              <Card key={m.id} decoration="tack" tilt={tilt} className="pt-7">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-2xl leading-snug">
-                    <Link href={`/models/${m.code}`} className="hover:text-accent">
+              <Card key={m.id} className="flex flex-col gap-4">
+                <div>
+                  <h2 className="text-lg leading-snug">
+                    <Link href={`/models/${m.code}`} className="hover:text-brand-700">
                       {m.name}
                     </Link>
                   </h2>
-                  {latest && <StatusPill status={latest.status} />}
+                  {m.note && <div className="text-sm text-gray-500">{m.note}</div>}
                 </div>
 
-                {latest ? (
-                  <>
-                    <div className="text-ink/70 mt-1">ล่าสุด {latest.version}</div>
-                    <div className="my-3">
-                      <Meter
-                        value={p ? p.pass + p.na : 0}
-                        total={p ? p.total : caseCount || 1}
-                        tone={p && p.fail > 0 ? 'red' : 'blue'}
-                      />
+                {/* ---- เวอร์ชันที่ใช้งานอยู่ ---- */}
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">ใช้งานอยู่</div>
+                  {released ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{released.version}</div>
+                        <div className="text-xs text-gray-500">
+                          ปล่อยเมื่อ{' '}
+                          {released.releasedAt ? new Date(released.releasedAt).toLocaleDateString('th-TH') : '—'}
+                        </div>
+                      </div>
+                      <BtnLink href={`/api/releases/${released.id}/download`} className="shrink-0">
+                        ดาวน์โหลด
+                      </BtnLink>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {p ? (
-                        <>
-                          <Pill tone={p.fail > 0 ? 'red' : 'blue'}>
-                            {p.pass + p.na} / {p.total} เคส
+                  ) : (
+                    <div className="text-sm text-gray-500">ยังไม่มีเวอร์ชันที่ปล่อยใช้งาน</div>
+                  )}
+                </div>
+
+                {/* ---- เวอร์ชันที่กำลังทำ ---- */}
+                {working && (
+                  <div className="rounded-lg border border-gray-200 p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="text-xs font-medium uppercase tracking-wide text-gray-500">กำลังทดสอบ</div>
+                      <StatusPill status={working.status} />
+                    </div>
+                    <div className="font-medium mb-2">{working.version}</div>
+                    {progress ? (
+                      <>
+                        <Meter
+                          value={progress.pass + progress.na}
+                          total={progress.total}
+                          tone={progress.fail > 0 ? 'red' : 'blue'}
+                        />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Pill tone={progress.fail > 0 ? 'red' : 'blue'}>
+                            {progress.pass + progress.na} / {progress.total} เคส
                           </Pill>
-                          {p.fail > 0 && <Pill tone="red">ไม่ผ่าน {p.fail}</Pill>}
-                        </>
-                      ) : (
-                        <Pill tone="grey">ยังไม่ทดสอบ{caseCount ? ` · ${caseCount} เคส` : ''}</Pill>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-ink/60 mt-3">ยังไม่มี Flow ในรุ่นนี้</div>
-                )}
+                          {progress.fail > 0 && <Pill tone="red">ไม่ผ่าน {progress.fail}</Pill>}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-sm text-gray-500">ยังไม่ได้เริ่มทดสอบ</div>
+                    )}
 
-                {testable && (
-                  <form
-                    action={async () => {
-                      'use server';
-                      await startTestRun(latest.id);
-                    }}
-                    className="mt-4"
-                  >
-                    <Btn type="submit" className="w-full text-lg">
-                      {openRun ? 'ทำต่อการทดสอบ' : 'เริ่มทดสอบ'} {latest.version}
-                    </Btn>
-                  </form>
-                )}
-
-                {latest && canTest && !tpl && (
-                  <div className="mt-4 text-sm text-ink/60">
-                    ทดสอบไม่ได้ — รุ่นนี้ยังไม่มี checklist ที่เผยแพร่
+                    {canTest && tpl && (
+                      <form
+                        action={async () => {
+                          'use server';
+                          await startTestRun(working.id);
+                        }}
+                        className="mt-3"
+                      >
+                        <Btn type="submit" variant={openRun ? 'primary' : 'secondary'} className="w-full">
+                          {openRun ? 'ทำต่อการทดสอบ' : 'เริ่มทดสอบ'}
+                        </Btn>
+                      </form>
+                    )}
+                    {canTest && !tpl && (
+                      <div className="mt-3 text-xs text-gray-500">ทดสอบไม่ได้ — รุ่นนี้ยังไม่มี checklist</div>
+                    )}
                   </div>
                 )}
 
-                <div className="mt-5 flex flex-wrap gap-3 text-base">
-                  <Link href={`/models/${m.code}`} className="underline decoration-wavy hover:text-accent">
-                    ประวัติเวอร์ชัน ({releases.length})
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-auto">
+                  <Link href={`/models/${m.code}`} className={linkClass}>
+                    ทุกเวอร์ชัน
                   </Link>
-                  <Link href={`/coverage/${m.code}`} className="underline decoration-wavy hover:text-accent">
+                  <Link href={`/models/${m.code}/checklist`} className={linkClass}>
+                    Checklist
+                  </Link>
+                  <Link href={`/models/${m.code}/summary`} className={linkClass}>
                     สรุปการทดสอบ
                   </Link>
                 </div>

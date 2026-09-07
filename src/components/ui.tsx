@@ -4,18 +4,17 @@ import type { ReactNode } from 'react';
 /* ---------------------------------- ปุ่ม ---------------------------------- */
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2 min-h-[48px] px-6 text-lg wob border-[3px] border-ink ' +
-  'shadow-hard transition-transform duration-100 ' +
-  'hover:shadow-hardSm hover:translate-x-[2px] hover:translate-y-[2px] ' +
-  'active:shadow-none active:translate-x-[4px] active:translate-y-[4px] ' +
-  'disabled:opacity-40 disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-2 min-h-[40px] px-4 rounded-md text-sm font-medium ' +
+  'border transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ' +
+  'disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap';
 
-type Variant = 'primary' | 'secondary' | 'plain';
+type Variant = 'primary' | 'secondary' | 'plain' | 'danger';
 
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-white text-ink hover:bg-accent hover:text-white',
-  secondary: 'bg-muted text-ink hover:bg-pen hover:text-white',
-  plain: 'bg-white text-ink hover:bg-muted',
+  primary: 'bg-brand-600 border-brand-600 text-white hover:bg-brand-700 hover:border-brand-700',
+  secondary: 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50',
+  plain: 'bg-transparent border-transparent text-gray-700 hover:bg-gray-100',
+  danger: 'bg-white border-red-300 text-red-700 hover:bg-red-50',
 };
 
 export function Btn({
@@ -49,30 +48,23 @@ export function BtnLink({
   );
 }
 
+/** ปุ่มเล็กสำหรับใช้ในแถวรายการ */
+export const smallBtn =
+  'inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50 transition-colors';
+export const smallDangerBtn =
+  'inline-flex items-center rounded-md border border-red-200 bg-white px-3 py-1 text-sm text-red-700 hover:bg-red-50 transition-colors';
+
 /* --------------------------------- การ์ด --------------------------------- */
 
 export function Card({
   children,
   className = '',
-  decoration,
-  tilt = 0,
 }: {
   children: ReactNode;
   className?: string;
-  decoration?: 'tape' | 'tack';
-  tilt?: number;
 }) {
   return (
-    <div
-      className={`relative bg-white border-2 border-ink wob-md shadow-softest p-5 md:p-6 ${className}`}
-      style={tilt ? { transform: `rotate(${tilt}deg)` } : undefined}
-    >
-      {decoration === 'tape' && (
-        <span className="absolute -top-3 left-1/2 -ml-[60px] w-[120px] h-7 bg-ink/15 border-x border-dashed border-ink/30 -rotate-2" />
-      )}
-      {decoration === 'tack' && (
-        <span className="absolute -top-[10px] left-1/2 -ml-[10px] w-5 h-5 rounded-full bg-accent border-2 border-ink" />
-      )}
+    <div className={`bg-white border border-gray-200 rounded-xl shadow-card p-5 md:p-6 ${className}`}>
       {children}
     </div>
   );
@@ -81,13 +73,14 @@ export function Card({
 /* --------------------------------- ป้าย ---------------------------------- */
 
 const PILL_TONE = {
-  neutral: 'bg-white',
-  yellow: 'bg-postit',
-  blue: 'bg-[#dbe6f5] text-pen',
-  red: 'bg-[#ffdede] text-accent',
-  grey: 'bg-muted',
-  solidBlue: 'bg-pen text-white',
-  solidRed: 'bg-accent text-white',
+  neutral: 'bg-gray-100 text-gray-700',
+  yellow: 'bg-amber-100 text-amber-800',
+  blue: 'bg-blue-100 text-blue-800',
+  green: 'bg-green-100 text-green-800',
+  red: 'bg-red-100 text-red-800',
+  grey: 'bg-gray-100 text-gray-500',
+  solidBlue: 'bg-brand-600 text-white',
+  solidRed: 'bg-red-600 text-white',
 } as const;
 
 export function Pill({
@@ -101,7 +94,7 @@ export function Pill({
 }) {
   return (
     <span
-      className={`inline-block border-2 border-ink wob-sm px-3 text-sm whitespace-nowrap ${PILL_TONE[tone]} ${className}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${PILL_TONE[tone]} ${className}`}
     >
       {children}
     </span>
@@ -112,30 +105,19 @@ export function StatusPill({ status }: { status: string }) {
   const map: Record<string, { tone: keyof typeof PILL_TONE; label: string }> = {
     DRAFT: { tone: 'grey', label: 'ร่าง' },
     TESTING: { tone: 'yellow', label: 'กำลังทดสอบ' },
-    RELEASED: { tone: 'blue', label: 'ปล่อยใช้งาน' },
+    RELEASED: { tone: 'green', label: 'ปล่อยใช้งาน' },
     DEPRECATED: { tone: 'grey', label: 'เลิกใช้' },
     IN_PROGRESS: { tone: 'yellow', label: 'ทำค้างอยู่' },
-    SUBMITTED: { tone: 'blue', label: 'ส่งแล้ว' },
+    SUBMITTED: { tone: 'green', label: 'ส่งแล้ว' },
     VOIDED: { tone: 'red', label: 'ถูกยกเลิก' },
-    PUBLISHED: { tone: 'blue', label: 'ใช้อยู่' },
+    PUBLISHED: { tone: 'green', label: 'ใช้อยู่' },
     ARCHIVED: { tone: 'grey', label: 'เก็บเข้ากรุ' },
   };
   const s = map[status] ?? { tone: 'neutral' as const, label: status };
   return <Pill tone={s.tone}>{s.label}</Pill>;
 }
 
-/* ------------------------------ หัวข้อ / ป้ายกระดาษ ------------------------ */
-
-export function StickyTag({ children, tone = 'yellow' }: { children: ReactNode; tone?: 'yellow' | 'blue' | 'red' }) {
-  const bg = tone === 'blue' ? 'bg-[#dbe6f5]' : tone === 'red' ? 'bg-[#ffdede]' : 'bg-postit';
-  return (
-    <span
-      className={`inline-block ${bg} border-2 border-ink wob-sm shadow-hardSm px-4 font-head text-base -rotate-2 mb-3`}
-    >
-      {children}
-    </span>
-  );
-}
+/* ------------------------------ หัวข้อหน้า ------------------------------- */
 
 export function PageHead({
   tag,
@@ -149,13 +131,15 @@ export function PageHead({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-4 justify-between mb-7">
+    <div className="flex flex-wrap items-end gap-4 justify-between mb-6">
       <div>
-        {tag && <StickyTag>{tag}</StickyTag>}
-        <h1 className="text-4xl md:text-5xl leading-tight">{title}</h1>
-        {sub && <div className="mt-1 text-ink/70">{sub}</div>}
+        {tag && (
+          <div className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">{tag}</div>
+        )}
+        <h1 className="text-2xl md:text-3xl leading-tight">{title}</h1>
+        {sub && <div className="mt-1 text-sm text-gray-600">{sub}</div>}
       </div>
-      {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
+      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
   );
 }
@@ -172,62 +156,63 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="font-head text-lg">{label}</span>
+    <label className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium text-gray-800">{label}</span>
       {children}
-      {hint && <span className="text-sm text-ink/60">{hint}</span>}
+      {hint && <span className="text-xs text-gray-500">{hint}</span>}
     </label>
   );
 }
 
 export const inputClass =
-  'w-full bg-white border-2 border-ink wob-sm px-4 py-2 text-lg placeholder:text-ink/40 ' +
-  'focus:border-pen focus:ring-2 focus:ring-pen/20 focus:outline-none';
+  'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 ' +
+  'focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none';
 
 /* -------------------------------- ตัวช่วยอื่น ------------------------------ */
 
-export function Meter({ value, total, tone = 'blue' }: { value: number; total: number; tone?: 'blue' | 'red' }) {
+export function Meter({ value, total, tone = 'blue' }: { value: number; total: number; tone?: 'blue' | 'red' | 'green' }) {
   const pct = total === 0 ? 0 : Math.round((value / total) * 100);
+  const color = tone === 'red' ? 'bg-red-500' : tone === 'green' ? 'bg-green-500' : 'bg-brand-600';
   return (
     <div
-      className="h-4 border-2 border-ink wob-sm bg-white overflow-hidden"
+      className="h-2 rounded-full bg-gray-200 overflow-hidden"
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <div className={`h-full ${tone === 'red' ? 'bg-accent' : 'bg-pen'}`} style={{ width: `${pct}%` }} />
+      <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <div className="border-[3px] border-dashed border-ink wob-md p-10 text-center text-ink/60 bg-paper">
+    <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
       {children}
     </div>
   );
 }
 
-export function Squiggle() {
+export function Note({ children, tone = 'info' }: { children: ReactNode; tone?: 'info' | 'warn' | 'danger' }) {
+  const cls =
+    tone === 'danger'
+      ? 'bg-red-50 border-red-200 text-red-800'
+      : tone === 'warn'
+        ? 'bg-amber-50 border-amber-200 text-amber-900'
+        : 'bg-blue-50 border-blue-200 text-blue-900';
+  return <div className={`rounded-md border px-4 py-3 text-sm ${cls}`}>{children}</div>;
+}
+
+export function ErrorBanner({ children }: { children: ReactNode }) {
   return (
-    <svg viewBox="0 0 200 16" fill="none" aria-hidden className="block mx-auto my-10 w-52 h-4">
-      <path
-        d="M4 8 C 20 0, 30 16, 46 8 S 72 0, 88 8 S 114 16, 130 8 S 156 0, 172 8 S 192 14, 196 8"
-        stroke="#2d2d2d"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
+    <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{children}</div>
   );
 }
 
-export function Note({ children, tone = 'yellow' }: { children: ReactNode; tone?: 'yellow' | 'red' }) {
-  return (
-    <div
-      className={`border-2 border-ink wob-sm px-4 py-3 ${tone === 'red' ? 'bg-[#ffdede]' : 'bg-postit'}`}
-    >
-      {children}
-    </div>
-  );
-}
+/** ลิงก์ในเนื้อหา */
+export const linkClass = 'text-brand-600 hover:text-brand-700 hover:underline';
+
+/** แถวรายการที่ใช้ซ้ำในหลายหน้า */
+export const rowClass =
+  'rounded-lg border border-gray-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2';

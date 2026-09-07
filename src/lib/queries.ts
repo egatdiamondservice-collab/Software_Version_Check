@@ -43,6 +43,22 @@ export function listReleases(modelId?: string): ReleaseWithMeta[] {
   return rows;
 }
 
+/** เวอร์ชันที่ "ปล่อยใช้งาน" อยู่ตอนนี้ของรุ่น — ตัวที่ช่างควรโหลดไปลงตู้ */
+export function releasedOf(modelId: string): ReleaseWithMeta | undefined {
+  return get<ReleaseWithMeta>(
+    `${RELEASE_SELECT} WHERE r.modelId = ? AND r.status = 'RELEASED' ORDER BY r.releasedAt DESC LIMIT 1`,
+    modelId
+  );
+}
+
+/** เวอร์ชันล่าสุดที่ยังไม่ปล่อย (ร่างหรือกำลังทดสอบ) — ตัวที่วิศวกรกำลังทำอยู่ */
+export function inProgressOf(modelId: string): ReleaseWithMeta | undefined {
+  return get<ReleaseWithMeta>(
+    `${RELEASE_SELECT} WHERE r.modelId = ? AND r.status IN ('DRAFT','TESTING') ORDER BY r.createdAt DESC LIMIT 1`,
+    modelId
+  );
+}
+
 export function releaseById(id: string): ReleaseWithMeta | undefined {
   return get<ReleaseWithMeta>(`${RELEASE_SELECT} WHERE r.id = ?`, id);
 }

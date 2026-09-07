@@ -22,15 +22,15 @@ export default async function NewModelPage({
         title="เพิ่มรุ่นตู้ใหม่"
         sub="ฮาร์ดแวร์ที่ใส่ตรงนี้จะใช้กับทุกเวอร์ชันของรุ่นนี้"
         actions={
-          <BtnLink href="/models" variant="plain">
+          <BtnLink href="/models" variant="secondary">
             กลับไปหน้ารุ่นตู้
           </BtnLink>
         }
       />
 
-      {error && <div className="mb-6 border-2 border-ink wob-sm bg-[#ffdede] px-4 py-3">{error}</div>}
+      {error && <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
 
-      <Card decoration="tape" className="pt-8 max-w-3xl">
+      <Card className="max-w-3xl">
         <form action={createModel} className="flex flex-col gap-5">
           <Field label="ชื่อรุ่น">
             <input name="name" className={inputClass} placeholder="Vector 160 kW" required autoFocus />

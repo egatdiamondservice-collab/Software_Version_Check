@@ -21,9 +21,16 @@ function kb(n: number) {
   return n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(0)} KB` : `${(n / 1048576).toFixed(1)} MB`;
 }
 
-export default async function ReleasePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReleasePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string; released?: string }>;
+}) {
   const user = await requireUser();
   const { id } = await params;
+  const { created, released } = await searchParams;
   const release = releaseById(id);
   if (!release) notFound();
 
@@ -52,7 +59,7 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
         }
         actions={
           <>
-            <BtnLink href={`/api/releases/${release.id}/download`} variant="plain">
+            <BtnLink href={`/api/releases/${release.id}/download`} variant="secondary">
               ดาวน์โหลดทั้งชุด
             </BtnLink>
             {canEdit && (
@@ -74,16 +81,52 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <StatusPill status={release.status} />
         {gate.ok ? (
-          <Pill tone="blue">ผ่านเกณฑ์ปล่อยใช้งาน</Pill>
+          <Pill tone="green">ผ่านเกณฑ์ปล่อยใช้งาน</Pill>
         ) : (
           <Pill tone="grey">{gate.reason}</Pill>
         )}
       </div>
 
+      {released && (
+        <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-5 flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[240px]">
+            <div className="font-semibold text-green-800">ปล่อยใช้งานแล้ว</div>
+            <div className="text-sm text-gray-700">
+              ทีมโหลด {release.version} ได้จากปุ่มดาวน์โหลดบนหน้าแรกทันที
+            </div>
+          </div>
+          <BtnLink href="/" variant="secondary">
+            ไปหน้าแรก
+          </BtnLink>
+        </div>
+      )}
+
+      {created && canEdit && (
+        <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50 p-5 flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[240px]">
+            <div className="font-semibold text-brand-700">อัปโหลดเรียบร้อย</div>
+            <div className="text-sm text-gray-700">
+              {artifacts.length} ไฟล์ถูกเก็บไว้แล้ว ขั้นต่อไปคือทดสอบ — จะเริ่มเลยไหม
+            </div>
+          </div>
+          <form
+            action={async () => {
+              'use server';
+              await startTestRun(release.id);
+            }}
+          >
+            <Btn type="submit">เริ่มทดสอบเลย</Btn>
+          </form>
+          <Link href={`/releases/${release.id}`} className="text-sm text-gray-500 hover:underline">
+            ไว้ก่อน
+          </Link>
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card decoration="tape" className="pt-7">
-            <h2 className="text-2xl mb-3">ไฟล์ในชุดนี้</h2>
+          <Card className="">
+            <h2 className="text-lg mb-3">ไฟล์ในชุดนี้</h2>
             {artifacts.length === 0 ? (
               <Empty>ยังไม่มีไฟล์</Empty>
             ) : (
@@ -91,20 +134,20 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                 {artifacts.map((a) => (
                   <div
                     key={a.id}
-                    className="border-2 border-dashed border-ink wob-sm px-4 py-3 flex flex-wrap items-center gap-3 bg-paper"
+                    className="rounded-lg border border-gray-200 bg-white px-4 py-3 flex flex-wrap items-center gap-3"
                   >
                     <Pill tone="yellow">{a.slot}</Pill>
                     <a
                       href={`/api/artifacts/${a.id}`}
-                      className="flex-1 min-w-[200px] underline decoration-wavy hover:text-accent break-all"
+                      className="flex-1 min-w-[200px] text-brand-600 hover:underline break-all"
                     >
                       {a.filename}
                     </a>
-                    <span className="text-sm text-ink/70">
+                    <span className="text-sm text-gray-600">
                       {kb(a.sizeBytes)} · {a.nodeCount} node · {a.tabCount} tab
                     </span>
                     <span
-                      className="text-xs text-ink/50 font-mono w-full break-all"
+                      className="text-xs text-gray-500 font-mono w-full break-all"
                       title="sha256 ใช้ยืนยันว่าไฟล์ที่โหลดไปตรงกับต้นฉบับ"
                     >
                       sha256 {a.sha256.slice(0, 24)}…
@@ -122,7 +165,7 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
           </Card>
 
           <Card>
-            <h2 className="text-2xl mb-3">แก้อะไรบ้าง</h2>
+            <h2 className="text-lg mb-3">แก้อะไรบ้าง</h2>
             {canEdit ? (
               <form
                 action={async (fd: FormData) => {
@@ -145,23 +188,23 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                 </Btn>
               </form>
             ) : (
-              <p className="m-0">{release.changelog || <span className="text-ink/50">ไม่ได้ระบุ</span>}</p>
+              <p className="m-0">{release.changelog || <span className="text-gray-500">ไม่ได้ระบุ</span>}</p>
             )}
           </Card>
 
           <Card>
-            <h2 className="text-2xl mb-1">ฮาร์ดแวร์ที่ใช้ได้</h2>
-            <p className="text-sm text-ink/70 mb-3">
+            <h2 className="text-lg mb-1">ฮาร์ดแวร์ที่ใช้ได้</h2>
+            <p className="text-sm text-gray-600 mb-3">
               เป็นคุณสมบัติของรุ่น {model.name} ทุกเวอร์ชันของรุ่นนี้ใช้ค่าเดียวกัน
             </p>
             <div className="flex flex-wrap gap-2 items-center">
               {hardware.length > 0 ? (
                 hardware.map((h) => <Pill key={h}>{h}</Pill>)
               ) : (
-                <span className="text-ink/50">ยังไม่ได้ระบุ</span>
+                <span className="text-gray-500">ยังไม่ได้ระบุ</span>
               )}
               {canEdit && (
-                <Link href="/models" className="underline decoration-wavy hover:text-accent text-sm ml-2">
+                <Link href="/models" className="text-brand-600 hover:underline text-sm ml-2">
                   แก้ที่หน้ารุ่นตู้
                 </Link>
               )}
@@ -169,7 +212,7 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
           </Card>
 
           <Card>
-            <h2 className="text-2xl mb-3">ผลทดสอบ</h2>
+            <h2 className="text-lg mb-3">ผลทดสอบ</h2>
             {runs.length === 0 ? (
               <Empty>ยังไม่เคยทดสอบเวอร์ชันนี้</Empty>
             ) : (
@@ -179,20 +222,20 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                   return (
                     <div
                       key={r.id}
-                      className="border-2 border-dashed border-ink wob-sm px-4 py-3 bg-paper flex flex-wrap items-center gap-3"
+                      className="rounded-lg border border-gray-200 bg-white px-4 py-3 flex flex-wrap items-center gap-3"
                     >
                       <StatusPill status={r.status} />
-                      <Link href={`/runs/${r.id}`} className="flex-1 min-w-[160px] underline decoration-wavy hover:text-accent">
+                      <Link href={`/runs/${r.id}`} className="flex-1 min-w-[160px] text-brand-600 hover:underline">
                         {r.testerName} · checklist v{r.templateVersion}
                       </Link>
                       <Pill tone={p.fail > 0 ? 'red' : 'blue'}>
                         ผ่าน {p.pass} · ไม่ผ่าน {p.fail} · ไม่เกี่ยว {p.na} / {p.total}
                       </Pill>
-                      <span className="text-sm text-ink/60">
+                      <span className="text-sm text-gray-500">
                         {new Date(r.startedAt).toLocaleDateString('th-TH')}
                       </span>
                       {r.status === 'VOIDED' && (
-                        <span className="w-full text-sm text-accent">เหตุผลที่ยกเลิก: {r.voidReason}</span>
+                        <span className="w-full text-sm text-red-600">เหตุผลที่ยกเลิก: {r.voidReason}</span>
                       )}
                       {user.role === 'ADMIN' && r.status === 'SUBMITTED' && (
                         <form
@@ -205,12 +248,12 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
                           <input
                             name="reason"
                             placeholder="เหตุผลที่ยกเลิกผลนี้"
-                            className="flex-1 min-w-[200px] border-2 border-ink wob-sm px-3 py-1 bg-white text-sm"
+                            className="flex-1 min-w-[200px] rounded-md border border-gray-300 bg-white px-3 py-1 text-sm"
                             required
                           />
                           <button
                             type="submit"
-                            className="border-2 border-ink wob-sm px-3 py-1 bg-white text-sm shadow-hardSm hover:bg-accent hover:text-white"
+                            className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
                           >
                             ยกเลิกผล
                           </button>
@@ -226,48 +269,68 @@ export default async function ReleasePage({ params }: { params: Promise<{ id: st
 
         <div className="flex flex-col gap-6">
           {canEdit && (
-            <Card decoration="tack" className="pt-7" tilt={1}>
-              <h2 className="text-2xl mb-1">สถานะ</h2>
-              <p className="text-sm text-ink/70 mb-4">
-                จะกด “ปล่อยใช้งาน” ได้ต่อเมื่อมีผลทดสอบที่ส่งแล้วและไม่มีเคสสำคัญค้าง
-              </p>
-              <div className="flex flex-col gap-3">
-                {(['DRAFT', 'TESTING', 'RELEASED', 'DEPRECATED'] as const).map((s) => (
+            <Card>
+              <h2 className="text-lg mb-1">ขั้นถัดไป</h2>
+              {release.status === 'RELEASED' ? (
+                <>
+                  <p className="text-sm text-gray-600 mb-4">
+                    เวอร์ชันนี้คือตัวที่ใช้งานอยู่ ถ้าอัปโหลดตัวใหม่แล้วปล่อยใช้งาน ตัวนี้จะกลายเป็น “เลิกใช้” ให้เอง
+                  </p>
                   <form
-                    key={s}
                     action={async () => {
                       'use server';
-                      await setReleaseStatus(release.id, s);
+                      await setReleaseStatus(release.id, 'DEPRECATED');
                     }}
                   >
-                    <Btn
-                      type="submit"
-                      variant={s === 'RELEASED' ? 'primary' : 'plain'}
-                      className="w-full text-base"
-                      disabled={release.status === s || (s === 'RELEASED' && !gate.ok)}
-                    >
-                      {s === 'DRAFT'
-                        ? 'ตั้งเป็นร่าง'
-                        : s === 'TESTING'
-                          ? 'กำลังทดสอบ'
-                          : s === 'RELEASED'
-                            ? 'ปล่อยใช้งาน'
-                            : 'เลิกใช้'}
+                    <Btn type="submit" variant="danger" className="w-full">
+                      เลิกใช้เวอร์ชันนี้
                     </Btn>
                   </form>
-                ))}
-              </div>
+                </>
+              ) : release.status === 'DEPRECATED' ? (
+                <>
+                  <p className="text-sm text-gray-600 mb-4">เวอร์ชันนี้เลิกใช้แล้ว ยังดาวน์โหลดได้เพื่อเทียบกับตู้เก่า</p>
+                  <form
+                    action={async () => {
+                      'use server';
+                      await setReleaseStatus(release.id, 'RELEASED');
+                    }}
+                  >
+                    <Btn type="submit" variant="secondary" className="w-full" disabled={!gate.ok}>
+                      กลับมาใช้งานเวอร์ชันนี้
+                    </Btn>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {gate.ok
+                      ? 'ผ่านการทดสอบครบแล้ว กดปล่อยใช้งานได้เลย เวอร์ชันเก่าจะกลายเป็น “เลิกใช้” ให้เอง'
+                      : `ยังปล่อยใช้งานไม่ได้ — ${gate.reason}`}
+                  </p>
+                  <form
+                    action={async () => {
+                      'use server';
+                      await setReleaseStatus(release.id, 'RELEASED');
+                    }}
+                  >
+                    <Btn type="submit" className="w-full" disabled={!gate.ok}>
+                      ปล่อยใช้งาน
+                    </Btn>
+                  </form>
+                </>
+              )}
             </Card>
           )}
 
-          <Card tilt={-1}>
-            <h3 className="text-xl mb-2">มาจากเวอร์ชันไหน</h3>
+          <Card>
+            <h3 className="text-base mb-2">มาจากเวอร์ชันไหน</h3>
             {release.baseReleaseId ? (
-              <Link href={`/releases/${release.baseReleaseId}`} className="underline decoration-wavy">
+              <Link href={`/releases/${release.baseReleaseId}`} className="text-brand-600 hover:underline">
                 ดูเวอร์ชันต้นทาง
               </Link>
             ) : (
-              <p className="text-ink/60 m-0">ไม่ได้ระบุ</p>
+              <p className="text-gray-500 m-0">ไม่ได้ระบุ</p>
             )}
           </Card>
         </div>

@@ -10,18 +10,17 @@ async function logout() {
   redirect('/login');
 }
 
-const LINK =
-  'font-head text-lg px-1 hover:text-accent transition-transform duration-100 hover:-rotate-2 inline-block';
+const LINK = 'text-sm font-medium text-gray-600 hover:text-gray-900 px-1 py-1';
 
 export function Nav({ user }: { user: UserRow }) {
   return (
-    <header className="border-b-[3px] border-dashed border-ink mb-8">
-      <div className="max-w-6xl mx-auto px-5 py-4 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <Link href="/" className="font-head text-2xl -rotate-1 inline-block">
+    <header className="bg-white border-b border-gray-200 mb-8">
+      <div className="max-w-6xl mx-auto px-5 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <Link href="/" className="text-lg font-semibold text-gray-900 tracking-tight">
           FlowBook
         </Link>
 
-        <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link href="/" className={LINK}>
             หน้าแรก
           </Link>
@@ -33,9 +32,6 @@ export function Nav({ user }: { user: UserRow }) {
               อัปโหลด
             </Link>
           )}
-          <Link href="/checklists" className={LINK}>
-            Checklist
-          </Link>
           {user.role === 'ADMIN' && (
             <>
               <Link href="/admin/users" className={LINK}>
@@ -49,12 +45,12 @@ export function Nav({ user }: { user: UserRow }) {
         </nav>
 
         <form action={logout} className="ml-auto flex items-center gap-3">
-          <span className="text-sm bg-postit border-2 border-ink wob-sm px-3 py-0.5 rotate-1 inline-block">
-            {user.name} · {ROLE_LABEL[user.role]}
+          <span className="text-sm text-gray-600">
+            {user.name} <span className="text-gray-400">· {ROLE_LABEL[user.role]}</span>
           </span>
           <button
             type="submit"
-            className="text-sm border-2 border-ink wob-sm px-3 py-0.5 bg-white shadow-hardSm hover:bg-accent hover:text-white transition-transform duration-100"
+            className="text-sm rounded-md border border-gray-300 bg-white px-3 py-1 text-gray-700 hover:bg-gray-50"
           >
             ออกจากระบบ
           </button>
